@@ -1,0 +1,152 @@
+/* ABOUT SECTION */
+body {
+    overflow-x: hidden;
+}
+
+#about {
+    /* position: relative; */
+    margin-top: 7rem;
+}
+
+.about-containers {
+    gap: 2rem;
+    margin-bottom: 2rem;
+    margin-top: 2rem;
+}
+
+.section__text__p {
+    text-align: center;
+}
+
+.about-details-container {
+    justify-content: center;
+    flex-direction: column;
+    margin-top: 1rem;
+}
+
+.about-containers,
+.about-details-container {
+    display: flex;
+}
+
+.about-pic {
+    border-radius: 2rem;
+}
+
+.arrow {
+    position: absolute;
+    /* right: -5rem; */
+    bottom: 2.5rem;
+}
+
+.details-container {
+    padding: 1.5rem;
+    flex: 1;
+    background: white;
+    border-radius: 2rem;
+    border: rgb(53, 53, 53) 0.1rem solid;
+    border-color: rgb(163, 163, 163);
+    text-align: center;
+}
+
+.section-container {
+    gap: 4rem;
+    height: 80%;
+}
+
+.section__pic-container {
+    height: 400px;
+    width: 400px;
+    margin: auto 0;
+    /* border: 1px solid red; */
+    border-radius: 5%;
+    background-color: black;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.5);
+}
+
+.section__pic-container:hover {
+    box-shadow: none;
+    transition: 0.4s;
+
+}
+
+.section__pic-container img {
+    width: 300px;
+    height: auto;
+
+}
+
+@media screen and (max-width: 1200px) {
+
+    .section-container {
+        display: block;
+    }
+
+
+    .arrow {
+        display: none;
+    }
+
+    section,
+    .section-container {
+        height: fit-content;
+    }
+
+
+
+    .section__pic-container {
+        /* border: 1px solid rgb(209, 27, 27); */
+        height: 100%;
+        width: 100%;
+        text-align: center;
+        /* margin: 0 auto 2rem; */
+        margin: auto;
+        margin-bottom: 1rem;
+    }
+
+    .section__pic-container img {
+        width: 245px;
+        height: auto;
+    }
+
+    .about-containers {
+        margin-top: 0;
+    }
+
+    #about {
+        /* border: 2px solid red; */
+        margin-top: 0px;
+    }
+}
+
+.about_div {
+    margin-top: 0px;
+    /* border: 2px solid red; */
+}
+
+#about {
+    /* border: 2px solid red; */
+    margin-top: 0px;
+}
+
+@media screen and (max-width: 600px) {
+    .section__pic-container {
+        width: auto;
+        height: 46vw;
+        justify-content: center;
+    }
+
+    .section__text__p2 {
+        font-size: 1.25rem;
+    }
+
+    .title {
+        font-size: 2rem;
+    }
+
+    .text-container {
+        text-align: justify;
+    }
+}

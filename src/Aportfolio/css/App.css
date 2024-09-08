@@ -1,0 +1,14 @@
+.App {
+    height: 100vh;
+    background-image: url('../img/bg00.png');
+    /* Update with the path to your image */
+    background-size: cover;
+    background-position: center;
+    perspective: 1000px;
+    /* Gives a sense of depth */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    /* Ensures text is visible on potentially dark backgrounds */
+}

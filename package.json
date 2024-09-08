@@ -1,0 +1,64 @@
+{
+  "name": "toduapp",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@chakra-ui/react": "^2.8.2",
+    "@emailjs/browser": "^4.4.1",
+    "@emotion/react": "^11.13.0",
+    "@emotion/styled": "^11.13.0",
+    "@react-three/drei": "^9.109.2",
+    "@react-three/fiber": "^8.16.8",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.7.2",
+    "babel-preset-react-app": "^10.0.1",
+    "d3": "^7.9.0",
+    "emailjs-com": "^3.2.0",
+    "framer-motion": "^11.3.21",
+    "jquery": "^3.7.1",
+    "mongodb": "^6.5.0",
+    "mongoose": "^8.2.4",
+    "react": "^18.3.1",
+    "react-d3": "^0.4.0",
+    "react-dom": "^18.3.1",
+    "react-icons": "^5.0.1",
+    "react-router-dom": "^6.23.1",
+    "react-scripts": "^5.0.1",
+    "react-slick": "^0.30.2",
+    "scss": "^0.2.4",
+    "socket.io-client": "^4.7.5",
+    "swiper": "^11.1.0",
+    "three": "^0.167.1",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+       "dev": "vite",
+    "start": "react-scripts --openssl-legacy-provider start",
+    "build": "react-scripts --openssl-legacy-provider build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+  }
+}

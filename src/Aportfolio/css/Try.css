@@ -1,0 +1,35 @@
+/* Ensure your canvas container takes up the full viewport */
+.canvas-container {
+    /* position: fixed; */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 25%;
+    /* background: linear-gradient(135deg, #1e1e1e 0%, #353535 100%); */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+}
+
+/* Add some glow to the lights */
+.canvas-container canvas {
+    outline: none;
+    border: none;
+}
+
+/* Glow effect for ambient lighting */
+.canvas-container canvas .ambient-light {
+    filter: blur(20px);
+    /* background: rgba(255, 255, 255, 0.2); */
+}
+
+/* Orbit controls */
+.canvas-container canvas .orbit-controls {
+    cursor: grab;
+}
+
+.orbit-controls:active {
+    cursor: grabbing;
+}

@@ -1,0 +1,16 @@
+/* FOOTER SECTION */
+
+.footer_div {
+
+    background-color: rgb(52, 52, 52);
+}
+
+footer {
+    height: 26vh;
+    margin: 0 1rem;
+}
+
+footer p {
+    text-align: center;
+    color: white;
+}
