@@ -40,8 +40,8 @@ const App = () => {
                     position={[5, 5, 5]}
                     intensity={1.5}
                     castShadow
-                    shadow-mapSize-width={1024}
-                    shadow-mapSize-height={1024}
+                    shadow-mapSize-width={824}
+                    shadow-mapSize-height={824}
                     shadow-camera-far={15}
                     shadow-camera-left={-10}
                     shadow-camera-right={10}
@@ -55,7 +55,7 @@ const App = () => {
                     rotation={[-Math.PI / 2, 0, 0]}
                 >
                     <planeGeometry args={[10, 10]} />
-                    <shadowMaterial opacity={0} />
+                    <shadowMaterial opacity={0.5} />
                 </mesh>
                 <OrbitControls enableZoom={false} />
             </Canvas>
