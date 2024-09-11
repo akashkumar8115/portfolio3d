@@ -1,18 +1,20 @@
 import React from "react";
 import "../css/Project.css";
 
-import Project0 from "../img/pro0.mp4";
+import Project0 from "../videos/pro0.mp4";
 import Project01 from "../img/pro01.png";
-import Project02 from "../img/pro02.mp4";
+import Project02 from "../videos/pro02.mp4";
 import Project03 from "../img/pro03.png";
 import Project04 from "../img/pro04.png";
 import Project05 from "../img/pro05.png";
-import Project06 from "../img/pro06.mp4";
+import Project06 from "../videos/pro06.mp4";
 import Project07 from "../img/pro07.png";
-import Project08 from "../img/pro08.mp4";
-import Project09 from "../img/pro09.mp4";
-import Project10 from "../img/pro10.mp4";
+import Project08 from "../videos/pro08.mp4";
+import Project09 from "../videos/pro09.mp4";
+import Project10 from "../videos/pro10.mp4";
 import Project11 from "../img/pro11.png";
+import Project12 from "../videos/pro12.mp4";
+
 
 function Projects() {
   // project 0
@@ -23,6 +25,15 @@ function Projects() {
   const Project0_LiveDemo = (event) => {
     event.preventDefault();
     window.location.href = "https://mobile-store-sooty-phi.vercel.app/";
+  };
+  // project 12
+  const Project12_Github = (event) => {
+    event.preventDefault();
+    window.location.href = "https://github.com/akashkumar8115/online-cpp-compiler";
+  };
+  const Project12_LiveDemo = (event) => {
+    event.preventDefault();
+    window.location.href = "https://online-cpp-compiler-pearl.vercel.app/";
   };
 
   const Project01_Github = (event) => {
@@ -171,6 +182,32 @@ function Projects() {
                 <button
                   className="btn btn-color-2 project-btn"
                   onClick={Project0_LiveDemo}
+                >
+                  Live Demo
+                </button>
+              </div>
+            </div>
+
+            {/* project 12 */}
+            <div className="details-container color-container">
+              <div className="article-container">
+                <video src={Project12} controls autoPlay muted>
+                  <source src={Project12} type="video/mp4" />
+                </video>
+              </div>
+              <h2 className="experience-sub-title project-title">
+                Online C++ compiler
+              </h2>
+              <div className="btn-container">
+                <button
+                  className="btn btn-color-2 project-btn"
+                  onClick={Project12_Github}
+                >
+                  Github
+                </button>
+                <button
+                  className="btn btn-color-2 project-btn"
+                  onClick={Project12_LiveDemo}
                 >
                   Live Demo
                 </button>
