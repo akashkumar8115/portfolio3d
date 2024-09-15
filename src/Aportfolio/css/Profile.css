@@ -47,8 +47,7 @@ section {
   overflow: hidden;
 }
 
-.btn-container {
-}
+.btn-container {}
 
 .btn-color-2 {
   color: white;
@@ -72,10 +71,20 @@ section {
   font-size: 1.75rem;
   margin-bottom: 1rem;
 }
+.title{
+  align-items: center;
+  text-align: center;
 
-.title {
+}
+.title-name {
   font-size: 3rem;
   text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+  margin: 0 auto;
+  /* letter-spacing: 0.15em; */
+  border-right: 0.1em solid #dfe6e9;
+  animation: blink-caret 0.75s step-end infinite;
 }
 
 #socials-container {
@@ -98,9 +107,11 @@ section {
   align-items: center;
   text-align: center;
 }
+
 #socials-container div:hover {
   background-color: rgb(12, 95, 249);
 }
+
 #socials-container div img {
   margin: auto;
 }
@@ -125,7 +136,7 @@ section {
 .auto-type {
   display: inline-block;
   overflow: hidden;
-  border-right: 0.1em solid orange;
+  /* border-right: 0.1em solid orange; */
   white-space: nowrap;
 }
 
@@ -140,6 +151,7 @@ section {
 }
 
 @keyframes blink-caret {
+
   0%,
   100% {
     border-color: transparent;
@@ -152,6 +164,7 @@ section {
 
 /* Add keyframes for retyping */
 @keyframes retyping {
+
   0%,
   20%,
   100% {
@@ -222,4 +235,7 @@ section {
     /* border: 2px solid red; */
     margin: auto;
   }
+.title-name {
+font-size: 1.8rem;
+}
 }

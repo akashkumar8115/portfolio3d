@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useEffect } from 'react';
+
 // import AkashP from "../img/image-ak.png";
 import Linkedin from "../img/linkedin.png";
 import GitHub from "../img/github.png";
@@ -30,6 +31,37 @@ function Profile() {
     window.location.href = "https://github.com/akashkumar8115";
   };
 
+
+  // text animation
+  const [text, setText] = useState(' ');
+  const [isTyping, setIsTyping] = useState(true);
+  const textToType = 'Akash Kumar';
+  const typingSpeed = 250; // Speed of typing (ms)
+  const erasingSpeed = 100; // Speed of erasing (ms)
+  // const pauseDuration = 500; // Pause duration before starting to erase (ms)
+
+  useEffect(() => {
+    let timer;
+    if (isTyping) {
+      timer = setTimeout(() => {
+        setText((prev) => textToType.slice(0, prev.length + 1));
+        if (text.length === textToType.length) {
+          setIsTyping(false);
+        }
+      }, typingSpeed);
+    } else {
+      timer = setTimeout(() => {
+        setText((prev) => prev.slice(0, -1));
+        if (text.length === 0) {
+          setIsTyping(true);
+        }
+      }, erasingSpeed);
+    }
+
+    return () => clearTimeout(timer);
+  }, [text, isTyping]);
+
+
   return (
     <>
       <div className="div_pro">
@@ -44,7 +76,7 @@ function Profile() {
               <p className="section__text__p1">Hello, I'm</p>
               <div className="auto-type">
                 <span className="text">
-                  <h1 className="title">Akash</h1>
+                  <h1 className="title-name">&nbsp; {text}</h1>
                 </span>
               </div>
             </div>

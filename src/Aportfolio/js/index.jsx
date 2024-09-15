@@ -8,7 +8,7 @@ import ContactForm from "./ContactForm.jsx";
 import Contact from "./Contact.jsx";
 
 import Footer from "./Footer.jsx";
-// import Try from "./Try.jsx"
+import Try from "./Try.jsx"
 import "../css/MediaQuari.css";
 function index() {
   return (

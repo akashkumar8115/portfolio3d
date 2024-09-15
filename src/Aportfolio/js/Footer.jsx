@@ -15,6 +15,7 @@ function Footer() {
                     </div>
                 </nav>
                 <p>Copyright &#169; 2024 Akash. All Rights Reserved.</p>
+                <p  className='created'><a href="https://www.linkedin.com/in/akash-kumar-54073a209/">Created By Akash kumar </a></p>
             </footer>
         </div>
     )

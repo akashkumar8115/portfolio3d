@@ -1,83 +1,77 @@
-.containers {
-    font-size: 24px;
-    font-family: Arial, sans-serif;
-    overflow: hidden; /* Add this to hide the overflow */
+/* Container for centering and responsive design */
+.typewriter-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  /* Full screen height */
+  background: #1e272e;
+  /* Dark background for contrast */
+  color: #dfe6e9;
+  /* Light text color */
+  font-family: 'Courier New', Courier, monospace;
+}
+
+/* Text with typing effect */
+.typewriter {
+  font-size: 3rem;
+  font-weight: 700;
+  overflow: hidden;
+  /* Ensures the text stays within bounds */
+  border-right: 0.15em solid #dfe6e9;
+  /* Simulates cursor */
+  white-space: nowrap;
+  margin: 0 auto;
+  letter-spacing: 0.15em;
+  animation: typing 4s steps(10, end) 1s 1 normal both, blink-caret 0.75s step-end infinite, erase 4s steps(10, end) 5s infinite;
+}
+
+/* Typing animation */
+@keyframes typing {
+  from {
+    width: 0;
   }
-  
-  .anim-text {
-    display: inline-block;
-    position: relative;
+
+  to {
+    width: 20em;
+    /* Adjust the width based on your text length */
   }
-  
-  .anim-text::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 2px; /* adjust the width of the vertical line */
-    height: 100%;
-    background-color: #000; /* adjust the color of the vertical line */
-    animation: animate-vertical-line 2s linear infinite;
+}
+
+/* Erase animation */
+@keyframes erase {
+  from {
+    width: 20em;
+    /* Same width as typing animation */
   }
-  
-  @keyframes animate-vertical-line {
-    0% {
-      right: 100%;
-    }
-    100% {
-      right: 0;
-    }
+
+  to {
+    width: 0;
   }
-  
-  .anim-text span {
-    animation: animate-text 2s linear infinite;
+}
+
+/* Cursor blink animation */
+@keyframes blink-caret {
+
+  from,
+  to {
+    border-color: transparent;
   }
-  
-  @keyframes animate-text {
-    0% {
-      opacity: 0;
-    }
-    10% {
-      opacity: 1;
-    }
-    90% {
-      opacity: 1;
-    }
-    100% {
-      opacity: 0;
-    }
+
+  50% {
+    border-color: #dfe6e9;
   }
-  
-  .anim-text span:nth-child(1) {
-    animation-delay: 0s;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .typewriter {
+    font-size: 2.5rem;
   }
-  .anim-text span:nth-child(2) {
-    animation-delay: 0.2s;
+}
+
+@media (max-width: 480px) {
+  .typewriter {
+    font-size: 2rem;
   }
-  .anim-text span:nth-child(3) {
-    animation-delay: 0.4s;
-  }
-  .anim-text span:nth-child(4) {
-    animation-delay: 0.6s;
-  }
-  .anim-text span:nth-child(5) {
-    animation-delay: 0.8s;
-  }
-  .anim-text span:nth-child(6) {
-    animation-delay: 1s;
-  }
-  .anim-text span:nth-child(7) {
-    animation-delay: 1.2s;
-  }
-  .anim-text span:nth-child(8) {
-    animation-delay: 1.4s;
-  }
-  .anim-text span:nth-child(9) {
-    animation-delay: 1.6s;
-  }
-  .anim-text span:nth-child(10) {
-    animation-delay: 1.8s;
-  }
-  .anim-text span:nth-child(11) {
-    animation-delay: 2s;
-  }
+}

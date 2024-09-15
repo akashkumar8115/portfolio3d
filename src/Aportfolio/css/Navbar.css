@@ -175,7 +175,7 @@ nav {
 .menu-links a {
   display: block;
   padding: 10px;
-  text-align: center;
+  text-align: start;
   font-size: 1.5rem;
   text-decoration: none;
   transition: all 0.3 ease-in-out;
