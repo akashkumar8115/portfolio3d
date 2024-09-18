@@ -1,42 +1,40 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const IncrementingNumber = () => {
-  const [number, setNumber] = useState(1);
-  const maxNumber = 10;
-  const interval = 200; // Interval in milliseconds
-
+function App() {
+  const [visitCount, setVisitCount] = useState(0);
+  const namespace = 'akash';
+  const key = 'kumar';
+  var count;
   useEffect(() => {
-    let timer;
-    if (number < maxNumber) {
-      timer = setInterval(() => {
-        setNumber(prev => prev + 1);
-      }, interval);
-    }
-    return () => clearInterval(timer); // Cleanup interval on component unmount
-  }, [number]);
+    // Increment the visit count on page load
+    axios.put(`http://localhost:3001/api/hit/${namespace}/${key}`)
+      .then(response => {
+        setVisitCount(response.data.value);
+      })
+      .catch(error => {
+        console.error('Error incrementing visit count:', error);
+      });
+
+    // Fetch the current visit count
+    axios.get(`http://localhost:3001/api/get/${namespace}/${key}`)
+      .then(response => {
+        setVisitCount(response.data.value);
+      })
+      .catch(error => {
+        console.error('Error fetching visit count:', error);
+      });
+      
+    }, [namespace, key]);
+
+    count = visitCount;
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.number}>{number}</h1>
+    <div>
+      <h1>Live Visit Count</h1>
+      <p>Visits: {count}</p>
     </div>
   );
-};
+}
 
-const styles = {
-  container: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100vh',
-    backgroundColor: '#1e272e',
-    color: '#dfe6e9',
-    fontFamily: "'Courier New', Courier, monospace",
-  },
-  number: {
-    fontSize: '5rem',
-    fontWeight: '700',
-    transition: 'opacity 0.5s ease-in-out', // Smooth transition for fade-in effect
-  }
-};
-
-export default IncrementingNumber;
+export default App;

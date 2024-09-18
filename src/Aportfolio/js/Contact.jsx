@@ -1,21 +1,34 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 import "../css/Contact.css"
 import LinkedinImg from "../img/linkedin.png"
 import EmailImg from "../img/email.png"
 function Contact() {
     const [visitCount, setVisitCount] = useState(0);
+    const namespace = 'akash';
+    const key = 'kumar';
     const [isLoaded, setIsLoaded] = useState(false); // Animation trigger
     // Load visit count from localStorage and update it when the component mounts
     useEffect(() => {
-        const storedCount = localStorage.getItem('visitCount');
-        const count = storedCount ? parseInt(storedCount, 10) : 0;
+        // Increment the visit count on page load
+        axios.put(`http://localhost:3001/api/hit/${namespace}/${key}`)
+            .then(response => {
+                setVisitCount(response.data.value);
+            })
+            .catch(error => {
+                console.error('Error incrementing visit count:', error);
+            });
 
-        const newCount = count + 1;
+        // Fetch the current visit count
+        axios.get(`http://localhost:3001/api/get/${namespace}/${key}`)
+            .then(response => {
+                setVisitCount(response.data.value);
+            })
+            .catch(error => {
+                console.error('Error fetching visit count:', error);
+            });
 
-        setVisitCount(newCount);
-
-        localStorage.setItem('visitCount', newCount);
         // Trigger animation
         setTimeout(() => setIsLoaded(true), 300);
 

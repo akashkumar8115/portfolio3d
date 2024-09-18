@@ -13,7 +13,7 @@ import "../css/MediaQuari.css";
 function index() {
   return (
     <div>
-      {/* <Try/> */}
+      {/* <Try /> */}
       <Navbar />
       <Profile />
       <About />

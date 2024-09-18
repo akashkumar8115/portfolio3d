@@ -1,77 +1,22 @@
-/* Container for centering and responsive design */
-.typewriter-container {
+.App {
+  text-align: center;
+  margin-top: 50px;
+}
+
+.counter {
   display: flex;
-  justify-content: center;
   align-items: center;
-  height: 100vh;
-  /* Full screen height */
-  background: #1e272e;
-  /* Dark background for contrast */
-  color: #dfe6e9;
-  /* Light text color */
-  font-family: 'Courier New', Courier, monospace;
+  justify-content: center;
+  margin-bottom: 20px;
 }
 
-/* Text with typing effect */
-.typewriter {
-  font-size: 3rem;
-  font-weight: 700;
-  overflow: hidden;
-  /* Ensures the text stays within bounds */
-  border-right: 0.15em solid #dfe6e9;
-  /* Simulates cursor */
-  white-space: nowrap;
-  margin: 0 auto;
-  letter-spacing: 0.15em;
-  animation: typing 4s steps(10, end) 1s 1 normal both, blink-caret 0.75s step-end infinite, erase 4s steps(10, end) 5s infinite;
+.counter button {
+  margin: 0 10px;
+  padding: 10px 20px;
+  font-size: 16px;
 }
 
-/* Typing animation */
-@keyframes typing {
-  from {
-    width: 0;
-  }
-
-  to {
-    width: 20em;
-    /* Adjust the width based on your text length */
-  }
-}
-
-/* Erase animation */
-@keyframes erase {
-  from {
-    width: 20em;
-    /* Same width as typing animation */
-  }
-
-  to {
-    width: 0;
-  }
-}
-
-/* Cursor blink animation */
-@keyframes blink-caret {
-
-  from,
-  to {
-    border-color: transparent;
-  }
-
-  50% {
-    border-color: #dfe6e9;
-  }
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .typewriter {
-    font-size: 2.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .typewriter {
-    font-size: 2rem;
-  }
+.counter span {
+  font-size: 24px;
+  margin: 0 10px;
 }
