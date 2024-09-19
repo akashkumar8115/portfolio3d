@@ -9,7 +9,6 @@ function Contact() {
     const namespace = 'akash';
     const key = 'kumar';
     const [isLoaded, setIsLoaded] = useState(false); // Animation trigger
-    // Load visit count from localStorage and update it when the component mounts
     useEffect(() => {
         // Increment the visit count on page load
         axios.put(`https://livecounter-backend.onrender.com/api/hit/${namespace}/${key}`)
