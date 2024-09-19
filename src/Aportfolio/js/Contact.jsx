@@ -12,7 +12,7 @@ function Contact() {
     // Load visit count from localStorage and update it when the component mounts
     useEffect(() => {
         // Increment the visit count on page load
-        axios.put(`http://localhost:3001/api/hit/${namespace}/${key}`)
+        axios.put(`https://livecounter-backend.onrender.com/api/hit/${namespace}/${key}`)
             .then(response => {
                 setVisitCount(response.data.value);
             })
@@ -21,7 +21,7 @@ function Contact() {
             });
 
         // Fetch the current visit count
-        axios.get(`http://localhost:3001/api/get/${namespace}/${key}`)
+        axios.get(`https://livecounter-backend.onrender.com/api/get/${namespace}/${key}`)
             .then(response => {
                 setVisitCount(response.data.value);
             })
