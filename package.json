@@ -2,7 +2,7 @@
   "name": "portfolio_baclend",
   "version": "0.1.0",
   "private": true,
-  "proxy": "https://livecounter-backend.onrender.com/",
+  "proxy":[ "https://livecounter-backend.onrender.com","http://localhost:5001"],
 
   "dependencies": {
     "@chakra-ui/react": "^2.8.2",

@@ -4,11 +4,13 @@ import axios from 'axios';
 import "../css/Contact.css"
 import LinkedinImg from "../img/linkedin.png"
 import EmailImg from "../img/email.png"
+
 function Contact() {
     const [visitCount, setVisitCount] = useState(0);
     const namespace = 'akash';
     const key = 'kumar';
     const [isLoaded, setIsLoaded] = useState(false); // Animation trigger
+
     useEffect(() => {
         // Increment the visit count on page load
         axios.put(`https://livecounter-backend.onrender.com/api/hit/${namespace}/${key}`)
@@ -20,9 +22,10 @@ function Contact() {
             });
 
         // Fetch the current visit count
-        axios.get(`https://livecounter-backend.onrender.com/api/get/${namespace}/${key}`)
+        axios.get(`https://livecounter-backend.onrender.com/api`)
             .then(response => {
                 setVisitCount(response.data.value);
+                console.log(visitCount);
             })
             .catch(error => {
                 console.error('Error fetching visit count:', error);
@@ -30,9 +33,7 @@ function Contact() {
 
         // Trigger animation
         setTimeout(() => setIsLoaded(true), 300);
-
     }, []);
-
 
     return (
         <div>
@@ -54,7 +55,7 @@ function Contact() {
                             alt="LinkedIn_icon"
                             className="icon contact-icon"
                         />
-                        <p><a href="https://www.linkedin.com/in/akash-kumar-54073a209/'">LinkedIn</a></p>
+                        <p><a href="https://www.linkedin.com/in/akash-kumar-54073a209/">LinkedIn</a></p>
                     </div>
                 </div>
             </section>
@@ -72,4 +73,4 @@ function Contact() {
     )
 }
 
-export default Contact
+export default Contact;
