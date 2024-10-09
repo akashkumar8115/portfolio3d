@@ -30,7 +30,7 @@ article {
   display: flex;
   width: 10rem;
   justify-content: space-around;
-  gap: 0.5rem;
+  gap: 1.5rem;
   color: rgba(241, 142, 142, 0.84);
 }
 
@@ -67,7 +67,7 @@ article .icon {
 /* For smartphones */
 @media only screen and (max-width: 480px) {
   .shapere {
-    width: 60px;
+    width: 100px;
     /* height: 80px; */
   }
 }
