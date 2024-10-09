@@ -216,7 +216,7 @@ function Projects() {
 
             <div className="details-container color-container">
               <div className="article-container">
-                <img src={Project01} alt="Project01" className="project-img" />
+                <img src={Project01} alt="Project01" className="project-img" loading="lazy" />
               </div>
               <h2 className="experience-sub-title project-title">
                 Youtube Clone Website
@@ -264,7 +264,7 @@ function Projects() {
 
             <div className="details-container color-container">
               <div className="article-container">
-                <img src={Project03} alt="Project03" className="project-img" />
+                <img src={Project03} alt="Project03" className="project-img" loading="lazy" />
               </div>
               <h2 className="experience-sub-title project-title">
                 CSRL website
@@ -287,7 +287,7 @@ function Projects() {
 
             <div className="details-container color-container">
               <div className="article-container">
-                <img src={Project04} alt="Project04" className="project-img" />
+                <img src={Project04} alt="Project04" className="project-img" loading="lazy" />
               </div>
               <h2 className="experience-sub-title project-title">
                 Buy Food website
@@ -310,7 +310,7 @@ function Projects() {
 
             <div className="details-container color-container">
               <div className="article-container">
-                <img src={Project05} alt="Project05" className="project-img" />
+                <img src={Project05} alt="Project05" className="project-img" loading="lazy" />
               </div>
               <h2 className="experience-sub-title project-title">
                 Netflix Clone website
@@ -357,7 +357,7 @@ function Projects() {
 
             <div className="details-container color-container">
               <div className="article-container">
-                <img src={Project07} alt="Project07" className="project-img" />
+                <img src={Project07} alt="Project07" className="project-img" loading="lazy" />
               </div>
               <h2 className="experience-sub-title project-title">
                 Personal bookmark Page
@@ -449,7 +449,7 @@ function Projects() {
 
             <div className="details-container color-container">
               <div className="article-container">
-                <img src={Project11} alt="Project01" className="project-img" />
+                <img src={Project11} alt="Project01" className="project-img" loading="lazy" />
               </div>
               <h2 className="experience-sub-title project-title">
                 Monkey Game
@@ -477,7 +477,7 @@ function Projects() {
           src="./assets/arrow.png"
           alt=""
           className="icon arrow"
-          onClick={Arrow}
+          onClick={Arrow} loading="lazy"
         />
       </section>
     </div>
