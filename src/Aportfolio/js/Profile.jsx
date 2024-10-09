@@ -5,6 +5,7 @@ import Linkedin from "../img/linkedin.png";
 import GitHub from "../img/github.png";
 import RotatableBall from "./EarthR.jsx";
 // import RotatableId from "./BubbleLiD.jsx"
+import Earth from "../img/earth0.jpg";
 import Resume from "../img/Resume.pdf";
 
 import "../css/App.css";
@@ -68,7 +69,12 @@ function Profile() {
         <section id="profile">
           <div className="section_earth_container">
             <header className="App-header">
-              <RotatableBall />
+              {
+                <RotatableBall /> ||
+                <div className="earth-container">
+                  <img src={Earth} alt="Rotating earth" srcSet="" loading='lazy' />
+                </div>
+              }
             </header>
           </div>
           <div className="section__text">

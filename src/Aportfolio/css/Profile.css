@@ -46,7 +46,9 @@ section {
   align-items: center;
   overflow: hidden;
 }
-
+.earth-container{
+  background-color: black;
+}
 .btn-container {}
 
 .btn-color-2 {

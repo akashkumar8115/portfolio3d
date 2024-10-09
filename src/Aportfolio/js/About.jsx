@@ -11,15 +11,27 @@ function About() {
     return (
         <div className='about_div'>
             <section id="about">
-                <p className="section__text__p">Get To Know More</p>
                 <h1 className="title">About Me</h1>
                 <div className="section-container">
-                    <div className="section__pic-container">
-                        <img
-                            src={ProfileP}
-                            alt="Profile_picture"
-                            className="about-pic"
-                        />
+                    <div className="hover-container">
+                        <div className="section__pic-container hover-image">
+                            <img
+                                src={ProfileP}
+                                alt="Profile_picture"
+                                className="about-pic"
+                            />
+                            <div className="content">
+                                <p><h3> Akash Kumar</h3>
+
+                                    <b> Previous Education:</b> <br />
+
+                                    Ex-Jawahar Navodaya Vidyalaya (JNV), Mahoba <br />
+                                    Ex-GAIL Utkarsh Super 100, Kanpur <br />
+
+
+                                    .</p>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="about-details-container">

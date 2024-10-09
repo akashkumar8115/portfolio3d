@@ -13,7 +13,7 @@ function Contact() {
 
     useEffect(() => {
         // Increment the visit count on page load
-        axios.put(`/api/hit/${namespace}/${key}`)
+        axios.put(`https://livecounter-backend.onrender.com/api/hit/${namespace}/${key}`)
             .then(response => {
                 setVisitCount(response.data.value);
             })
@@ -22,7 +22,7 @@ function Contact() {
             });
 
         // Fetch the current visit count
-        axios.get(`/api/get/${namespace}/${key}`)
+        axios.get(`https://livecounter-backend.onrender.com/api/get/${namespace}/${key}`)
             .then(response => {
                 setVisitCount(response.data.value);
                 console.log(visitCount);

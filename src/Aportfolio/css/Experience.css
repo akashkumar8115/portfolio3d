@@ -47,7 +47,7 @@ article .icon {
   /* flex-direction: column; */
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  font-size: calc(10px + 1vmin);
   align-items: center;
   /* color: white; */
   /* padding: 20px; */
@@ -67,6 +67,7 @@ article .icon {
 /* For smartphones */
 @media only screen and (max-width: 480px) {
   .shapere {
-    width: 80px;
+    width: 60px;
+    /* height: 80px; */
   }
 }
