@@ -1,0 +1,31 @@
+/* src/App.css */
+
+.App-header {
+    margin: auto;
+    background-color: transparent;
+    /* border-radius: 50%; */
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(0px + 2vmin);
+    color: white;
+    /* padding: 20px; */
+}
+
+.App-header div {
+    position: relative;
+
+}
+
+.App-header canvas {
+    /* width: 2rem; */
+    border-radius: 50%;
+    background-color: transparent !important;
+    height: 100%;
+    width: 100%;
+    display: block;
+    cursor: pointer;
+}

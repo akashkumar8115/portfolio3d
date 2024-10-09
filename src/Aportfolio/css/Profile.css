@@ -1,0 +1,244 @@
+/* SECTIONS */
+.div_pro {
+  background-image: url("../img/solar.webp");
+  background-size: 100%;
+  color: white;
+  background-repeat: no-repeat;
+  background-blend-mode: lighten;
+  background-size: cover;
+  background-position: center;
+}
+
+section {
+  padding-top: 4vh;
+  /* height: 96vh; */
+  margin: 0 10rem;
+  box-sizing: border-box;
+  min-height: fit-content;
+}
+
+.section-container {
+  display: flex;
+}
+
+/* PROFILE SECTION */
+
+#profile {
+  display: flex;
+  justify-content: center;
+  gap: 5rem;
+  height: 85vh;
+}
+
+#profile img {
+  border-radius: 50%;
+  size: cover;
+}
+
+.section_earth_container {
+  display: flex;
+  height: 400px;
+  width: 400px;
+  margin: auto 0;
+  /* border: 2px solid red; */
+  /* background-color: red; */
+  border-radius: 50%;
+  align-items: center;
+  overflow: hidden;
+}
+
+.btn-container {}
+
+.btn-color-2 {
+  color: white;
+}
+
+.section__text {
+  align-self: center;
+  text-align: center;
+}
+
+.section__text p {
+  font-weight: 600;
+}
+
+.section__text__p1 {
+  text-align: center;
+  color: white;
+}
+
+.section__text__p2 {
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+}
+.title{
+  align-items: center;
+  text-align: center;
+
+}
+.title-name {
+  font-size: 3rem;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+  margin: 0 auto;
+  /* letter-spacing: 0.15em; */
+  border-right: 0.1em solid #dfe6e9;
+  animation: blink-caret 0.75s step-end infinite;
+}
+
+#socials-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  gap: 1rem;
+  width: 100%;
+  /* background-color: aliceblue; */
+}
+
+#socials-container div {
+  /* border-radius: 2px solid rgb(255, 255, 255); */
+  background-color: rgb(255, 255, 255);
+  border-radius: 50%;
+  height: 30px;
+  width: 30px;
+  padding: 0px;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+#socials-container div:hover {
+  background-color: rgb(12, 95, 249);
+}
+
+#socials-container div img {
+  margin: auto;
+}
+
+.container {
+  /* display: flex; */
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  /* background-color: #282c34; */
+  color: white;
+  font-family: "Courier New", Courier, monospace;
+  margin: 0;
+  font-size: 2em;
+}
+
+.container p {
+  /* position: relative; */
+  color: white;
+}
+
+.auto-type {
+  display: inline-block;
+  overflow: hidden;
+  /* border-right: 0.1em solid orange; */
+  white-space: nowrap;
+}
+
+@keyframes typing {
+  0% {
+    width: 0;
+  }
+
+  100% {
+    width: 100%;
+  }
+}
+
+@keyframes blink-caret {
+
+  0%,
+  100% {
+    border-color: transparent;
+  }
+
+  50% {
+    border-color: orange;
+  }
+}
+
+/* Add keyframes for retyping */
+@keyframes retyping {
+
+  0%,
+  20%,
+  100% {
+    width: 0;
+  }
+
+  50% {
+    width: 100%;
+  }
+}
+
+.text {
+  display: none;
+}
+
+.text:nth-child(1) {
+  display: inline-block;
+}
+
+/* BUTTONS */
+
+.btn-container {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.btn {
+  font-weight: 600;
+  transition: all 300ms ease;
+  padding: 1rem;
+  width: 8rem;
+  border-radius: 2rem;
+}
+
+.btn-color-1,
+.btn-color-2 {
+  border: rgb(0, 0, 0) 0.1rem solid;
+  color: rgb(0, 0, 0);
+}
+
+.btn-color-1:hover,
+.btn-color-2:hover {
+  cursor: pointer;
+  transition: all 0.3s;
+  background: rgb(0, 0, 0);
+  color: white;
+  border: rgb(255, 255, 255) 0.1rem solid;
+}
+
+.btn-container {
+  gap: 1rem;
+}
+
+@media screen and (max-width: 1200px) {
+.div_pro {
+height: 88vh;
+}
+  .section_earth_container {
+    max-width: 300px;
+    height: 300px;
+    /* border: 2px solid red; */
+    margin: auto;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .section_earth_container {
+    max-width: 200px;
+    height: 200px;
+    /* border: 2px solid red; */
+    margin: auto;
+  }
+.title-name {
+font-size: 1.8rem;
+}
+}
