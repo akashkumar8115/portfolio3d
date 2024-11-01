@@ -22,14 +22,11 @@ function About() {
                             />
                             <div className="content">
                                 <p><h3> Akash Kumar</h3>
-
                                     <b> Previous Education:</b> <br />
-
                                     Ex-Jawahar Navodaya Vidyalaya (JNV), Mahoba <br />
                                     Ex-GAIL Utkarsh Super 100, Kanpur <br />
-
-
-                                    .</p>
+                                    Now NIT Hamirpur <br />
+                                </p>
                             </div>
                         </div>
                     </div>

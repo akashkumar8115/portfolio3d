@@ -14,9 +14,20 @@ import Project09 from "../videos/pro09.mp4";
 import Project10 from "../videos/pro10.mp4";
 import Project11 from "../img/pro11.png";
 import Project12 from "../videos/pro12.mp4";
+import Project13 from "../img/pro13.png";
 
 
 function Projects() {
+  // project 13
+  const Project13_Github = (event) => {
+    event.preventDefault();
+    window.location.href = "https://github.com/akashkumar8115/Admin-Career-Academy";
+  };
+  const Project13_LiveDemo = (event) => {
+    event.preventDefault();
+    window.location.href = "https://admin-career-academy.vercel.app/";
+  };
+
   // project 0
   const Project0_Github = (event) => {
     event.preventDefault();
@@ -69,12 +80,12 @@ function Projects() {
   // project 04
   const Project04_Github = (event) => {
     event.preventDefault();
-    window.location.href = "https://github.com/akashkumar8115/food_buy";
+    window.location.href = "https://github.com/akashkumar8115/dynamically-variant";
   };
 
   const Project04_LiveDemo = (event) => {
     event.preventDefault();
-    window.location.href = "https://food-buy.vercel.app/";
+    window.location.href = "https://dynamically-variant.vercel.app/";
   };
 
   // project 05
@@ -162,6 +173,30 @@ function Projects() {
         <div className="experience-details-container">
           <div className="about-containers project_div">
             {/* projecet card start */}
+            {/* prject 13 */}
+            <div className="details-container color-container">
+              <div className="article-container">
+                <img src={Project13} alt="Project01" className="project-img" loading="lazy" />
+              </div>
+              <h2 className="experience-sub-title project-title">
+                Admin Career Academy
+              </h2>
+              <div className="btn-container">
+                <button
+                  className="btn btn-color-2 project-btn"
+                  onClick={Project13_Github}
+                >
+                  Github
+                </button>
+                <button
+                  className="btn btn-color-2 project-btn"
+                  onClick={Project13_LiveDemo}
+                >
+                  Live Demo
+                </button>
+              </div>
+            </div>
+
             {/* prject 01 */}
             <div className="details-container color-container">
               <div className="article-container">
