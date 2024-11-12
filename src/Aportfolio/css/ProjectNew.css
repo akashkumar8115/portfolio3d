@@ -1,0 +1,87 @@
+/* PROJECTS SECTION */
+
+#projects {
+    /* position: relative; */
+    justify-items: center;
+}
+
+.experience-details-container {
+    /* border: 2px solid red; */
+    /*     overflow: hidden; */
+    scroll-behavior: smooth;
+    overflow-wrap: break-word;
+    /* overflow: scroll; */
+}
+
+.project_div {
+    /* border: 2px solid red; */
+    width: auto;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.color-container {
+    border-color: rgb(163, 163, 163);
+    background: rgb(250, 250, 250);
+    box-shadow: 10px 10px 15px rgba(0, 0, 0, 0.3);
+}
+
+.color-container:hover {
+    box-shadow: none;
+}
+
+.project-img {
+    /* border-radius: 2rem; */
+    width: 90%;
+    height: 90%;
+}
+
+.project-title {
+    margin: 1rem;
+    color: black;
+}
+
+.project-btn {
+    color: black;
+    border-color: rgb(163, 163, 163);
+}
+
+.article-container {
+    /* border: 1px solid red; */
+}
+
+.article-container video {
+    height: 100%;
+    width: 100%;
+}
+
+.article-container img {
+    height: 100%;
+    width: 100%;
+}
+
+@media screen and (max-width: 1200px) {}
+
+@media screen and (max-width: 800px) {
+
+    /* Mobile styles */
+    .project_div .details-container {
+        max-width: 35rem;
+        margin: auto;
+        animation: scrollbar 2s linear;
+        animation-range: entry 0 cover;
+        animation-timeline: view();
+    }
+
+    @keyframes scrollbar {
+        0% {
+            opacity: 0.2;
+            scale: 0.6;
+        }
+
+        40% {
+            opacity: 1;
+            scale: 1;
+        }
+    }
+}
