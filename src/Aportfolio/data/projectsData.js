@@ -7,7 +7,7 @@ export const projectsData = [
         github: "https://github.com/akashkumar8115/Admin-Career-Academy",
         demo: "https://admin-career-academy.vercel.app/",
         isVideo: false,
-        technologies: ["React.js", "Node.js", "MongoDB"]
+        technologies: ["React.js", "Node.js", "Express", "MongoDB"]
     },
     {
         id: 2,
@@ -17,7 +17,7 @@ export const projectsData = [
         github: "https://github.com/akashkumar8115/mobile_store",
         demo: "https://mobile-store-sooty-phi.vercel.app/",
         isVideo: true,
-        technologies: ["React", "Redux", "Node.js", "Express"]
+        technologies: ["React", "Redux", "Node.js", "Express", "MongoDB"]
     },
     {
         id: 3,
@@ -27,7 +27,7 @@ export const projectsData = [
         github: "https://github.com/akashkumar8115/youtube.com",
         demo: "https://youtube-com-one.vercel.app/",
         isVideo: false,
-        technologies: ["React", "Node.js", "Firebase"]
+        technologies: ["React", "Node.js", "Firebase", "css"]
     },
     {
         id: 4,
@@ -37,7 +37,7 @@ export const projectsData = [
         github: "https://github.com/akashkumar8115/AspireNex_web-scraping-ecommerce-websites-",
         demo: "https://c7cmzk-5173.csb.app/",
         isVideo: true,
-        technologies: ["Puppeteer", "Node.js", "Express"]
+        technologies: ["Puppeteer", "Node.js", "Express", "react.js"]
     },
     {
         id: 5,
@@ -77,7 +77,7 @@ export const projectsData = [
         github: "https://github.com/akashkumar8115/portfolio3d",
         demo: "https://portfolio3d-iota-silk.vercel.app/",
         isVideo: true,
-        technologies: ["React", "Three.js"]
+        technologies: ["React", "Three.js", "CSS", "node.js", "mongoDB", "express.js"]
     },
     {
         id: 9,
@@ -107,7 +107,7 @@ export const projectsData = [
         github: "https://github.com/akashkumar8115/Chat_App",
         demo: "https://github.com/akashkumar8115/Chat_App",
         isVideo: true,
-        technologies: ["React", "Firebase"]
+        technologies: ["React", "Firebase", "Node.js", "Express"]
     },
     {
         id: 12,
