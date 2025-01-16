@@ -10,7 +10,7 @@ function Projects() {
 
   useEffect(() => {
     const filtered = selectedCategory === "All"
-      ? projectsData
+      ? projectsData 
       : projectsData.filter(project => project.category === selectedCategory);
     setFilteredProjects(filtered);
   }, [selectedCategory]);
