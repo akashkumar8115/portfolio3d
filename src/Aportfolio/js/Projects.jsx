@@ -26,7 +26,7 @@ function Projects() {
     >
       <div className="project-media">
         {project.isVideo ? (
-          <video
+          <video 
             src={project.image}
             controls
             autoPlay
