@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 import { listPublishedBlogs, listPublishedProjects, ventures } from "@/lib/content";
 import { absoluteUrl } from "@/lib/seo";
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [projects, blogs] = await Promise.all([listPublishedProjects(), listPublishedBlogs()]);
+export const dynamic = "force-dynamic";
 
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = ["/", "/projects", "/blogs"].map((path) => ({
     url: absoluteUrl(path),
     lastModified: new Date(),
@@ -19,19 +19,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  const projectRoutes = projects.map((project) => ({
-    url: absoluteUrl(`/projects/${project.id}`),
-    lastModified: project.updatedAt,
-    changeFrequency: "monthly" as const,
-    priority: 0.8,
-  }));
+  try {
+    const [projects, blogs] = await Promise.all([listPublishedProjects(), listPublishedBlogs()]);
 
-  const blogRoutes = blogs.map((blog) => ({
-    url: absoluteUrl(`/blogs/${blog.id}`),
-    lastModified: blog.updatedAt,
-    changeFrequency: "weekly" as const,
-    priority: 0.75,
-  }));
+    const projectRoutes = projects.map((project) => ({
+      url: absoluteUrl(`/projects/${project.id}`),
+      lastModified: project.updatedAt,
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    }));
 
-  return [...staticRoutes, ...ventureRoutes, ...projectRoutes, ...blogRoutes];
+    const blogRoutes = blogs.map((blog) => ({
+      url: absoluteUrl(`/blogs/${blog.id}`),
+      lastModified: blog.updatedAt,
+      changeFrequency: "weekly" as const,
+      priority: 0.75,
+    }));
+
+    return [...staticRoutes, ...ventureRoutes, ...projectRoutes, ...blogRoutes];
+  } catch {
+    return [...staticRoutes, ...ventureRoutes];
+  }
 }

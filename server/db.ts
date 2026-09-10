@@ -15,14 +15,25 @@ const cache: MongoCache = globalWithMongo.mongooseCache ?? { conn: null, promise
 globalWithMongo.mongooseCache = cache;
 
 export async function connectDB() {
-  if (cache.conn) {
+  if (cache.conn && mongoose.connection.readyState === 1) {
     return cache.conn;
   }
 
   if (!cache.promise) {
-    cache.promise = mongoose.connect(MONGODB_URI, {
-      bufferCommands: false,
-    });
+    cache.promise = mongoose
+      .connect(MONGODB_URI, {
+        bufferCommands: false,
+        serverSelectionTimeoutMS: 8000,
+        connectTimeoutMS: 8000,
+        socketTimeoutMS: 20000,
+        maxPoolSize: 5,
+      })
+      .then((connection) => connection)
+      .catch((error) => {
+        cache.promise = null;
+        cache.conn = null;
+        throw error;
+      });
   }
 
   cache.conn = await cache.promise;
