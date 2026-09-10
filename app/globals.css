@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: #ffffff;
+  color: #0f172a;
+  overflow-x: hidden;
+}
+
+@keyframes skill-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.skill-orbit {
+  animation: skill-orbit 9s linear infinite;
+  border-style: dashed;
+}
+
+@keyframes galaxy-twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.35);
+  }
+}
+
+.galaxy-twinkle {
+  animation-name: galaxy-twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes galaxy-shoot {
+  0% {
+    transform: translate(-20vw, 8vh) rotate(-22deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  18% {
+    transform: translate(110vw, 62vh) rotate(-22deg);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(110vw, 62vh) rotate(-22deg);
+  }
+}
+
+.galaxy-shoot {
+  top: 12%;
+  left: 0;
+  animation: galaxy-shoot 7.5s linear infinite;
+}
+
+.galaxy-shoot-delay {
+  top: 38%;
+  animation-delay: 3.4s;
+  animation-duration: 9s;
+}
+
+@keyframes sun-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.06);
+    filter: brightness(1.12);
+  }
+}
+
+.hero-sun {
+  width: 150px;
+  height: 150px;
+}
+
+.hero-sun-core {
+  position: absolute;
+  left: 18px;
+  top: 28px;
+  width: 78px;
+  height: 78px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 32% 30%, #fffdf2 0%, #ffe27a 28%, #ffb300 62%, #ff7a00 100%);
+  box-shadow:
+    0 0 18px 6px rgba(255, 236, 170, 0.95),
+    0 0 48px 18px rgba(255, 196, 70, 0.55),
+    0 0 110px 46px rgba(255, 150, 30, 0.22);
+  animation: sun-pulse 4.6s ease-in-out infinite;
+}
+
+.hero-sun-halo {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 210, 90, 0.35) 0%, rgba(255, 170, 40, 0.12) 42%, transparent 70%);
+  filter: blur(8px);
+}
