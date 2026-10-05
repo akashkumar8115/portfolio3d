@@ -21,15 +21,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     });
   }
 
-  const description = project.details || project.description;
+  const description = project.description;
   return pageMetadata({
     title: project.title,
     description,
     path: `/projects/${project.id}`,
-    image: project.image,
-    keywords: [project.title, project.company, project.role, ...project.technologies, ...project.highlights].filter(
-      Boolean,
-    ),
+    image: project.isVideo ? undefined : project.image,
+    keywords: [
+      project.title,
+      project.company,
+      project.role,
+      project.projectType,
+      project.category,
+      ...project.technologies,
+      ...project.highlights,
+    ].filter(Boolean),
   });
 }
 

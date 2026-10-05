@@ -1,16 +1,25 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { FaExternalLinkAlt, FaGithub, FaLinkedin } from "react-icons/fa";
+import {
+  FaArrowRight,
+  FaExternalLinkAlt,
+  FaGithub,
+  FaLinkedin,
+} from "react-icons/fa";
 import ProjectCard from "@/components/ProjectCard";
 import ProjectMedia from "@/components/ProjectMedia";
 import PublicShell from "@/components/PublicShell";
+import ContactCtaLink from "@/components/ContactCtaLink";
 import { getPublishedProject, listPublishedProjects } from "@/lib/content";
 import { getGoogleDriveImageSource } from "@/lib/projectMedia";
 
 export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ id: string }> };
+
+const sectionClass = "border-t border-slate-200 py-10 sm:py-12";
+const sectionHeadingClass = "text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl";
 
 export default async function ProjectDetailPage({ params }: Props) {
   const { id } = await params;
@@ -28,104 +37,233 @@ export default async function ProjectDetailPage({ params }: Props) {
     ))
     .slice(0, 3);
 
+  const projectLinks = [
+    project.demo ? {
+      href: project.demo,
+      label: "View live project",
+      icon: FaExternalLinkAlt,
+      className: "bg-sky-600 text-white hover:bg-sky-700",
+    } : null,
+    project.documentationUrl ? {
+      href: project.documentationUrl,
+      label: "Read documentation",
+      icon: FaExternalLinkAlt,
+      className: "border border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100",
+    } : null,
+    project.github ? {
+      href: project.github,
+      label: "View source code",
+      icon: FaGithub,
+      className: "bg-slate-900 text-white hover:bg-slate-800",
+    } : null,
+    project.socialLinks?.linkedin ? {
+      href: project.socialLinks.linkedin,
+      label: "View on LinkedIn",
+      icon: FaLinkedin,
+      className: "bg-[#0A66C2] text-white hover:bg-[#004182]",
+    } : null,
+  ].filter((link) => link !== null);
+
   return (
     <PublicShell>
-      <article className="px-4 py-16 sm:px-6">
-        <div className="mx-auto max-w-4xl">
-          <Link href="/projects" className="text-sm font-semibold text-sky-700 hover:text-sky-900">
-            ← All projects
+      <article className="px-4 pb-16 pt-8 sm:px-6 sm:pt-12">
+        <div className="mx-auto max-w-6xl">
+          <Link
+            href="/projects"
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-semibold text-sky-700 transition hover:text-sky-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-600"
+          >
+            <span aria-hidden="true">←</span> All projects
           </Link>
-          <header className="mt-8">
-            <p className="text-sm uppercase tracking-[0.25em] text-sky-600">
-              {project.kind === "partnership" ? project.company || "Partnership" : "Independent project"}
+
+          <header className="py-8 sm:py-12">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-sky-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-sky-800">
+                {project.kind === "partnership" ? project.company || "Partnership project" : "Independent project"}
+              </span>
+              {project.category && (
+                <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600">
+                  {project.category}
+                </span>
+              )}
+              {project.projectType && (
+                <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600">
+                  {project.projectType}
+                </span>
+              )}
+            </div>
+            <h1 className="mt-5 max-w-5xl text-4xl font-bold leading-tight tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
+              {project.title}
+            </h1>
+            <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-600 sm:text-xl sm:leading-9">
+              {project.description}
             </p>
-            <h1 className="mt-2 text-4xl font-bold text-slate-900">{project.title}</h1>
-            {project.role && <p className="mt-2 text-lg font-medium text-slate-600">{project.role}</p>}
-            {project.projectType && <p className="mt-1 text-sm text-slate-500">{project.projectType}</p>}
+
+            {(project.role || project.company) && (
+              <dl className="mt-7 flex flex-wrap gap-x-8 gap-y-4">
+                {project.role && (
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-wider text-slate-500">My contribution</dt>
+                    <dd className="mt-1 font-semibold text-slate-900">{project.role}</dd>
+                  </div>
+                )}
+                {project.company && (
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-wider text-slate-500">Organization</dt>
+                    <dd className="mt-1 font-semibold text-slate-900">{project.company}</dd>
+                  </div>
+                )}
+              </dl>
+            )}
+
+            {projectLinks.length > 0 && (
+              <nav aria-label="Project resources" className="mt-8 flex flex-wrap gap-3">
+                {projectLinks.map(({ href, label, icon: Icon, className }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 ${className}`}
+                  >
+                    <Icon aria-hidden="true" />
+                    {label}
+                    <span className="sr-only">(opens in a new tab)</span>
+                  </a>
+                ))}
+              </nav>
+            )}
           </header>
 
-          <div className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-slate-100">
+          <figure className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-[0_24px_70px_rgba(15,23,42,0.12)] sm:rounded-3xl">
             <ProjectMedia
               src={project.image}
               title={project.title}
               isVideo={project.isVideo}
-              className="aspect-video w-full"
-              imageClassName="w-full object-cover"
+              priority={!project.isVideo}
+              className="aspect-[4/3] w-full sm:aspect-[16/9]"
+              imageClassName="h-full w-full object-cover"
             />
-          </div>
+            <figcaption className="sr-only">{project.title} project preview</figcaption>
+          </figure>
 
-          <section className="mt-8">
-            <h2 className="text-xl font-semibold text-slate-900">Overview</h2>
-            <p className="mt-3 text-lg leading-8 text-slate-700">{project.description}</p>
-          </section>
-
-          {project.clients.length > 0 && (
-            <section className="mt-12">
-              <h2 className="text-2xl font-bold text-slate-900">Clients &amp; Organizations</h2>
-              <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                {project.clients.map((client) => (
-                  <article key={`${client.name}-${client.website}`} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    {client.logo && (
-                      <Image
-                        src={getGoogleDriveImageSource(client.logo)}
-                        alt={`${client.name} logo`}
-                        width={160}
-                        height={48}
-                        unoptimized
-                        className="mb-4 h-12 max-w-40 object-contain object-left"
-                      />
-                    )}
-                    <h3 className="text-lg font-semibold text-slate-900">{client.name}</h3>
-                    {client.description && <p className="mt-2 text-sm leading-6 text-slate-600">{client.description}</p>}
-                    {client.website && (
-                      <a
-                        href={client.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-sky-700 hover:text-sky-900"
-                      >
-                        Visit Website <FaExternalLinkAlt aria-hidden="true" />
-                      </a>
-                    )}
-                  </article>
+          {project.highlights.length > 0 && (
+            <section aria-labelledby="project-highlights" className={sectionClass}>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">At a glance</p>
+              <h2 id="project-highlights" className={`${sectionHeadingClass} mt-2`}>Key highlights</h2>
+              <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {project.highlights.map((highlight) => (
+                  <li key={highlight} className="flex gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700 shadow-sm">
+                    <span aria-hidden="true" className="mt-0.5 font-bold text-sky-600">✓</span>
+                    <span>{highlight}</span>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </section>
           )}
 
           {project.impactMetrics.length > 0 && (
-            <section className="mt-12">
-              <h2 className="text-2xl font-bold text-slate-900">Project Impact</h2>
+            <section aria-labelledby="project-impact" className={sectionClass}>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">Measured outcomes</p>
+              <h2 id="project-impact" className={`${sectionHeadingClass} mt-2`}>Project impact</h2>
               <dl className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {project.impactMetrics.map((metric) => (
-                  <div key={`${metric.label}-${metric.value}`} className="rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 to-white p-6">
-                    <dd className="text-3xl font-bold tracking-tight text-sky-700">{metric.value}</dd>
-                    <dt className="mt-2 text-sm font-medium text-slate-600">{metric.label}</dt>
+                  <div key={`${metric.label}-${metric.value}`} className="rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 to-white p-6 sm:p-7">
+                    <dt className="text-sm font-medium text-slate-600">{metric.label}</dt>
+                    <dd className="mt-2 text-4xl font-bold tracking-tight text-sky-800">{metric.value}</dd>
                   </div>
                 ))}
               </dl>
             </section>
           )}
 
+          {project.details && (
+            <section aria-labelledby="project-story" className={sectionClass}>
+              <div className="grid gap-5 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] lg:gap-12">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">Behind the work</p>
+                  <h2 id="project-story" className={`${sectionHeadingClass} mt-2`}>Project story</h2>
+                </div>
+                <div className="whitespace-pre-wrap rounded-2xl border border-slate-200 bg-white p-5 text-base leading-8 text-slate-700 shadow-sm sm:p-7">
+                  {project.details}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {project.technologies.length > 0 && (
+            <section aria-labelledby="project-technologies" className={sectionClass}>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">Built with</p>
+              <h2 id="project-technologies" className={`${sectionHeadingClass} mt-2`}>Technologies</h2>
+              <ul className="mt-5 flex flex-wrap gap-2" aria-label="Technologies used">
+                {project.technologies.map((technology) => (
+                  <li key={technology} className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700">
+                    {technology}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {project.clients.length > 0 && (
+            <section aria-labelledby="project-clients" className={sectionClass}>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">In good company</p>
+              <h2 id="project-clients" className={`${sectionHeadingClass} mt-2`}>Clients &amp; organizations</h2>
+              <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {project.clients.map((client) => (
+                  <li key={`${client.name}-${client.website}`} className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+                    {client.logo && (
+                      <Image
+                        src={getGoogleDriveImageSource(client.logo)}
+                        alt={`${client.name} logo`}
+                        width={160}
+                        height={56}
+                        sizes="160px"
+                        loading="lazy"
+                        unoptimized={client.logo.startsWith("http")}
+                        className="mb-4 h-14 max-w-40 object-contain object-left"
+                      />
+                    )}
+                    <h3 className="text-lg font-semibold text-slate-900">{client.name}</h3>
+                    {client.description && <p className="mt-2 flex-1 text-sm leading-6 text-slate-600">{client.description}</p>}
+                    {client.website && (
+                      <a
+                        href={client.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-4 inline-flex min-h-11 items-center gap-2 self-start text-sm font-semibold text-sky-700 hover:text-sky-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
+                      >
+                        Visit website <FaExternalLinkAlt aria-hidden="true" />
+                        <span className="sr-only">(opens in a new tab)</span>
+                      </a>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
           {project.testimonials.length > 0 && (
-            <section className="mt-12">
-              <h2 className="text-2xl font-bold text-slate-900">What They Say</h2>
-              <div className="mt-5 grid gap-4">
+            <section aria-labelledby="project-testimonials" className={sectionClass}>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">Trusted feedback</p>
+              <h2 id="project-testimonials" className={`${sectionHeadingClass} mt-2`}>What they say</h2>
+              <div className="mt-5 grid gap-4 lg:grid-cols-2">
                 {project.testimonials.map((testimonial, index) => (
-                  <figure key={`${testimonial.name}-${index}`} className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-                    <blockquote className="whitespace-pre-wrap text-base leading-7 text-slate-700">
+                  <figure key={`${testimonial.name}-${index}`} className="rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-7">
+                    <blockquote className="whitespace-pre-wrap text-lg leading-8 text-slate-700">
                       “{testimonial.quote}”
                     </blockquote>
                     {(testimonial.name || testimonial.designation || testimonial.organization) && (
-                      <figcaption className="mt-5 flex items-center gap-3 border-t border-slate-200 pt-4">
+                      <figcaption className="mt-6 flex items-center gap-3 border-t border-slate-200 pt-4">
                         {testimonial.avatar && (
                           <Image
                             src={getGoogleDriveImageSource(testimonial.avatar)}
                             alt=""
-                            width={44}
-                            height={44}
-                            unoptimized
-                            className="h-11 w-11 rounded-full object-cover"
+                            width={48}
+                            height={48}
+                            sizes="48px"
+                            loading="lazy"
+                            unoptimized={testimonial.avatar.startsWith("http")}
+                            className="h-12 w-12 rounded-full object-cover"
                           />
                         )}
                         <div>
@@ -144,70 +282,42 @@ export default async function ProjectDetailPage({ params }: Props) {
             </section>
           )}
 
-          {project.details && (
-            <section className="mt-6">
-              <h2 className="text-xl font-semibold text-slate-900">Project details</h2>
-              <div className="mt-3 whitespace-pre-wrap rounded-3xl border border-slate-200 bg-slate-50 p-6 text-base leading-8 text-slate-700">
-                {project.details}
-              </div>
-            </section>
-          )}
-
-          {project.highlights.length > 0 && (
-            <section className="mt-8">
-              <h2 className="text-xl font-semibold text-slate-900">Capabilities</h2>
-              <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-                {project.highlights.map((item) => (
-                  <li key={item} className="rounded-xl bg-sky-50 px-4 py-3 text-sm text-sky-900">{item}</li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          {project.technologies.length > 0 && (
-            <section className="mt-8">
-              <h2 className="text-xl font-semibold text-slate-900">Technologies</h2>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {project.technologies.map((technology) => (
-                  <span key={technology} className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
-                    {technology}
-                  </span>
-                ))}
-              </div>
-            </section>
-          )}
-
-          <nav aria-label="Project links" className="mt-8 flex flex-wrap gap-3">
-            {project.github && (
-              <a href={project.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white">
-                <FaGithub aria-hidden="true" /> Source code
-              </a>
-            )}
-            {project.demo && (
-              <a href={project.demo} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-sky-500 px-5 py-3 text-sm font-semibold text-white">
-                <FaExternalLinkAlt aria-hidden="true" /> Live demo
-              </a>
-            )}
-            {project.socialLinks?.linkedin && (
-              <a href={project.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-[#0A66C2] px-5 py-3 text-sm font-semibold text-white">
-                <FaLinkedin aria-hidden="true" /> LinkedIn
-              </a>
-            )}
-            {project.documentationUrl && (
-              <a href={project.documentationUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-5 py-3 text-sm font-semibold text-sky-800">
-                Documentation <FaExternalLinkAlt aria-hidden="true" />
-              </a>
-            )}
-            {project.companySlug && (
-              <Link href={`/ventures/${project.companySlug}`} className="inline-flex items-center rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700">
-                More from {project.company}
+          {project.companySlug && (
+            <div className="mt-8">
+              <Link
+                href={`/ventures/${project.companySlug}`}
+                className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-sky-700 hover:text-sky-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-600"
+              >
+                More from {project.company} <FaArrowRight aria-hidden="true" />
               </Link>
-            )}
-          </nav>
+            </div>
+          )}
+
+          <section aria-labelledby="project-cta" className="mt-14 overflow-hidden rounded-3xl bg-slate-950 px-6 py-9 text-white sm:px-10 sm:py-12">
+            <div className="grid items-center gap-7 md:grid-cols-[1fr_auto]">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-300">Have a project in mind?</p>
+                <h2 id="project-cta" className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">
+                  Let’s build something meaningful.
+                </h2>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
+                  Share what you’re working on and let’s explore how I can help.
+                </p>
+              </div>
+              <ContactCtaLink
+                origin="project"
+                originId={project.id}
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-sky-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-300"
+              >
+                Have a similar project? Let&apos;s talk <FaArrowRight aria-hidden="true" />
+              </ContactCtaLink>
+            </div>
+          </section>
 
           {relatedProjects.length > 0 && (
-            <section className="mt-16 border-t border-slate-200 pt-10">
-              <h2 className="text-2xl font-bold text-slate-900">
+            <section aria-labelledby="related-projects" className="mt-14 border-t border-slate-200 pt-10 sm:mt-16 sm:pt-12">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">Keep exploring</p>
+              <h2 id="related-projects" className={`${sectionHeadingClass} mt-2`}>
                 {project.kind === "partnership" ? `More ${project.company} work` : "More projects"}
               </h2>
               <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">

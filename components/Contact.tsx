@@ -2,6 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { useTRPC } from "@/lib/trpc";
 
 function ordinal(value: number) {
@@ -45,25 +46,25 @@ export default function Contact() {
   }, []);
 
   return (
-    <section id="contact" className="bg-white px-4 py-16 text-slate-900 sm:px-6">
+    <section id="contact-details" className="bg-white px-4 py-16 text-slate-900 sm:px-6">
       <div className="mx-auto max-w-3xl text-center">
         <p className="text-sm uppercase tracking-[0.3em] text-sky-600">Connect</p>
         <h2 className="mt-2 text-4xl font-bold">Contact</h2>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <a
-            href="mailto:20dec024@gmail.com"
+            href="mailto:akash2884182@gmail.com"
             className="inline-flex items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-5 py-3"
           >
-            <img src="/images/email.png" alt="" className="h-6 w-6" />
+            <Image src="/images/email.png" alt="" width={24} height={24} className="h-6 w-6" />
             akash2884182@gmail.com
           </a>
           <a
             href="https://www.linkedin.com/in/akash-kumar-54073a209/"
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-5 py-3"
           >
-            <img src="/images/linkedin.png" alt="" className="h-6 w-6 rounded-full bg-white" />
+            <Image src="/images/linkedin.png" alt="" width={24} height={24} className="h-6 w-6 rounded-full bg-white" />
             LinkedIn
           </a>
         </div>

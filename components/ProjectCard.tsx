@@ -55,7 +55,8 @@ export default function ProjectCard({
             src={project.image}
             title={project.title}
             isVideo={project.isVideo}
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            sizes={compact ? "(max-width: 640px) 300px, 340px" : "(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 33vw"}
+            className="h-full w-full object-cover"
             imageClassName="h-full w-full object-cover transition duration-500 group-hover:scale-105"
           />
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/45 to-transparent" />

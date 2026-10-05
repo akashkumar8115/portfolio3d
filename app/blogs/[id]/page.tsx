@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
+import ContactCtaLink from "@/components/ContactCtaLink";
 import { notFound } from "next/navigation";
 import BlogCard from "@/components/BlogCard";
 import PublicShell from "@/components/PublicShell";
@@ -41,11 +43,17 @@ export default async function BlogDetailPage({ params }: Props) {
             </div>
           </header>
           {blog.image && (
-            <img
-              src={getGoogleDriveImageSource(blog.image)}
-              alt={`${blog.title} cover`}
-              className="mt-8 w-full rounded-3xl object-cover"
-            />
+            <div className="relative mt-8 aspect-[16/9] overflow-hidden rounded-3xl bg-slate-100">
+              <Image
+                src={getGoogleDriveImageSource(blog.image)}
+                alt={`${blog.title} cover`}
+                fill
+                sizes="(max-width: 768px) 100vw, 768px"
+                priority
+                unoptimized={blog.image.startsWith("http")}
+                className="object-cover"
+              />
+            </div>
           )}
           <p className="mt-8 text-lg leading-8 text-slate-700">{blog.excerpt}</p>
           <div className="mt-6 whitespace-pre-wrap text-base leading-8 text-slate-700">{blog.content}</div>
@@ -57,11 +65,15 @@ export default async function BlogDetailPage({ params }: Props) {
             </div>
           )}
           <div className="mt-10 rounded-2xl bg-slate-50 p-6">
-            <p className="font-semibold text-slate-900">Building something related?</p>
-            <p className="mt-2 text-sm text-slate-600">I work across product strategy, architecture, and full-stack delivery.</p>
-            <Link href="/#contact" className="mt-4 inline-flex rounded-full bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-sky-700">
-              Start a project
-            </Link>
+            <p className="font-semibold text-slate-900">Need help building something similar?</p>
+            <p className="mt-2 text-sm text-slate-600">If this topic connects to a product you&apos;re planning, I&apos;d be glad to hear about it.</p>
+            <ContactCtaLink
+              origin="blog"
+              originId={blog.id}
+              className="mt-4 inline-flex min-h-11 items-center rounded-full bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
+            >
+              Discuss a project
+            </ContactCtaLink>
           </div>
           {relatedBlogs.length > 0 && (
             <section className="mt-14 border-t border-slate-200 pt-9">

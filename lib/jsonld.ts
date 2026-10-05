@@ -24,7 +24,7 @@ export function personJsonLd() {
     jobTitle: SITE_TAGLINE,
     url: absoluteUrl("/"),
     image: absoluteUrl("/images/image-ak.jpg"),
-    email: "mailto:20dec024@gmail.com",
+    email: "mailto:akash2884182@gmail.com",
     sameAs: [
       "https://www.linkedin.com/in/akash-kumar-54073a209/",
       "https://github.com/akashkumar8115",
@@ -55,20 +55,29 @@ export function projectJsonLd(project: {
   description: string;
   details?: string;
   image: string;
+  isVideo?: boolean;
   github?: string;
   demo?: string;
   socialLinks?: { linkedin?: string };
   technologies?: string[];
+  category?: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
 }) {
+  const pageUrl = absoluteUrl(`/projects/${project.id}`);
   return {
     "@context": "https://schema.org",
     "@type": "CreativeWork",
     name: project.title,
     description: project.details || project.description,
-    image: absoluteUrl(getGoogleDriveImageSource(project.image)),
-    url: absoluteUrl(`/projects/${project.id}`),
+    image: absoluteUrl(getGoogleDriveImageSource(project.isVideo ? "/images/image-ak.jpg" : project.image)),
+    url: pageUrl,
+    mainEntityOfPage: pageUrl,
     author: { "@type": "Person", name: SITE_NAME },
     keywords: (project.technologies ?? []).join(", "),
+    ...(project.category ? { genre: project.category } : {}),
+    ...(project.createdAt ? { dateCreated: project.createdAt } : {}),
+    ...(project.updatedAt || project.createdAt ? { dateModified: project.updatedAt || project.createdAt } : {}),
     sameAs: [project.demo, project.github, project.socialLinks?.linkedin].filter(Boolean),
   };
 }

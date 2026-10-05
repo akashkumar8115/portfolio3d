@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import SiteSearch from "@/components/SiteSearch";
 
 const links = [
@@ -20,9 +21,12 @@ export default function Navbar() {
     <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-xl">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
         <Link href="/#profile" className="flex min-w-0 items-center gap-3">
-          <img
+          <Image
             src="/images/image-ak.jpg"
             alt="Akash Kumar"
+            width={40}
+            height={40}
+            priority
             className="h-10 w-10 rounded-full object-cover ring-2 ring-sky-500/40"
           />
           <span className="truncate text-lg font-semibold tracking-wide text-slate-900">AKASH KUMAR</span>
@@ -40,9 +44,11 @@ export default function Navbar() {
           <SiteSearch />
           <button
             type="button"
-            className="flex h-10 w-10 flex-col items-center justify-center gap-1.5 lg:hidden"
+            className="flex h-11 w-11 flex-col items-center justify-center gap-1.5 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 lg:hidden"
             onClick={() => setOpen((value) => !value)}
-            aria-label="Toggle menu"
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            aria-controls="mobile-navigation"
           >
             <span className={`h-0.5 w-6 bg-slate-900 transition ${open ? "translate-y-2 rotate-45" : ""}`} />
             <span className={`h-0.5 w-6 bg-slate-900 transition ${open ? "opacity-0" : ""}`} />
@@ -50,17 +56,15 @@ export default function Navbar() {
           </button>
         </div>
       </nav>
-      {open && (
-        <div className="border-t border-slate-200 bg-white px-6 py-4 lg:hidden">
+      <div id="mobile-navigation" hidden={!open} className="border-t border-slate-200 bg-white px-6 py-4 lg:hidden">
           <div className="flex flex-col gap-4 text-slate-800">
             {links.map((link) => (
-              <a key={link.href} href={link.href} onClick={() => setOpen(false)}>
+              <a key={link.href} href={link.href} onClick={() => setOpen(false)} className="min-h-11 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600">
                 {link.label}
               </a>
             ))}
           </div>
-        </div>
-      )}
+      </div>
     </header>
   );
 }
