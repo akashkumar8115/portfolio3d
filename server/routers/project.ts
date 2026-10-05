@@ -68,7 +68,12 @@ export const projectRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       await connectDB();
       const { id, ...data } = input;
-      const updated = await ProjectModel.findByIdAndUpdate(id, normalizeProjectCompany(data), { new: true, runValidators: true });
+      const normalized = normalizeProjectCompany(data);
+      const { documentationUrl, ...projectFields } = normalized;
+      const update = documentationUrl === undefined
+        ? { $set: projectFields, $unset: { documentationUrl: 1 } }
+        : { $set: { ...projectFields, documentationUrl } };
+      const updated = await ProjectModel.findByIdAndUpdate(id, update, { new: true, runValidators: true });
       if (!updated) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Project not found." });
       }

@@ -1,3 +1,9 @@
+import type {
+  ProjectClient,
+  ProjectMetric,
+  ProjectTestimonial,
+} from "@/lib/validation/project";
+
 export type PublicProject = {
   id: string;
   title: string;
@@ -6,6 +12,10 @@ export type PublicProject = {
   github: string;
   demo: string;
   socialLinks?: { linkedin?: string };
+  documentationUrl?: string;
+  clients: ProjectClient[];
+  impactMetrics: ProjectMetric[];
+  testimonials: ProjectTestimonial[];
   isVideo: boolean;
   technologies: string[];
   company: string;

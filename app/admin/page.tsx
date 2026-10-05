@@ -19,8 +19,15 @@ import {
 } from "react-icons/fa";
 import { useTRPC } from "@/lib/trpc";
 import { ventures } from "@/server/data/projects";
-import { projectCreateSchema } from "@/lib/validation/project";
+import {
+  projectCreateSchema,
+  type ProjectClient,
+  type ProjectMetric,
+  type ProjectTestimonial,
+} from "@/lib/validation/project";
 import BlogPanel from "@/components/admin/BlogPanel";
+
+type Keyed<T> = T & { key: string };
 
 const emptyForm = {
   title: "",
@@ -29,6 +36,10 @@ const emptyForm = {
   github: "",
   demo: "",
   linkedin: "",
+  documentationUrl: "",
+  clients: [] as Keyed<ProjectClient>[],
+  impactMetrics: [] as Keyed<ProjectMetric>[],
+  testimonials: [] as Keyed<ProjectTestimonial>[],
   isVideo: false,
   technologies: "",
   highlights: "",
@@ -77,6 +88,7 @@ export default function AdminDashboardPage() {
   const [section, setSection] = useState<Section>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const seenUnread = useRef<number | null>(null);
+  const nextProofKey = useRef(0);
 
   const statsQuery = useQuery(trpc.auth.dashboard.queryOptions());
   const projectsQuery = useQuery(trpc.project.adminList.queryOptions());
@@ -277,6 +289,7 @@ export default function AdminDashboardPage() {
 
   const payload = useMemo(() => {
     const venture = ventures.find((item) => item.slug === form.companySlug);
+    const { clients, impactMetrics, testimonials } = form;
     return {
       title: form.title,
       description: form.description,
@@ -284,6 +297,12 @@ export default function AdminDashboardPage() {
       github: form.github,
       demo: form.demo,
       socialLinks: { linkedin: form.linkedin },
+      documentationUrl: form.documentationUrl,
+      clients: clients.map(({ name, logo, website, description }) => ({ name, logo, website, description })),
+      impactMetrics: impactMetrics.map(({ label, value }) => ({ label, value })),
+      testimonials: testimonials.map(({ quote, name, designation, organization, avatar }) => ({
+        quote, name, designation, organization, avatar,
+      })),
       isVideo: form.isVideo,
       technologies: form.technologies
         .split(",")
@@ -311,11 +330,12 @@ export default function AdminDashboardPage() {
     setStatusIsError(false);
     const parsed = projectCreateSchema.safeParse(payload);
     if (!parsed.success) {
-      setProjectErrors(
-        Object.fromEntries(
-          Object.entries(parsed.error.flatten().fieldErrors).map(([field, messages]) => [field, messages?.[0] ?? "Please check this field."]),
-        ),
-      );
+      const errors: Record<string, string> = {};
+      for (const issue of parsed.error.issues) {
+        const field = issue.path.map(String).join(".");
+        errors[field] ??= issue.message;
+      }
+      setProjectErrors(errors);
       setStatus("Please review the highlighted project fields.");
       setStatusIsError(true);
       return;
@@ -328,7 +348,7 @@ export default function AdminDashboardPage() {
     createProject.mutate(parsed.data);
   };
 
-  const uploadFile = async (file: File) => {
+  const uploadFile = async (file: File, onUploaded?: (url: string) => void) => {
     try {
       const data = new FormData();
       data.append("file", file);
@@ -339,7 +359,11 @@ export default function AdminDashboardPage() {
         setStatusIsError(true);
         return;
       }
-      setForm((prev) => ({ ...prev, image: json.url as string, isVideo: file.type.startsWith("video/") }));
+      if (onUploaded) {
+        onUploaded(json.url);
+      } else {
+        setForm((prev) => ({ ...prev, image: json.url as string, isVideo: file.type.startsWith("video/") }));
+      }
       setStatus("Media uploaded.");
       setStatusIsError(false);
     } catch {
@@ -358,6 +382,10 @@ export default function AdminDashboardPage() {
       github: project.github,
       demo: project.demo,
       linkedin: project.socialLinks?.linkedin ?? "",
+      documentationUrl: project.documentationUrl ?? "",
+      clients: (project.clients ?? []).map((client, index) => ({ ...client, key: `client-${index}` })),
+      impactMetrics: (project.impactMetrics ?? []).map((metric, index) => ({ ...metric, key: `metric-${index}` })),
+      testimonials: (project.testimonials ?? []).map((testimonial, index) => ({ ...testimonial, key: `testimonial-${index}` })),
       isVideo: project.isVideo,
       technologies: project.technologies.join(", "),
       highlights: (project.highlights ?? []).join(", "),
@@ -748,6 +776,345 @@ export default function AdminDashboardPage() {
                       {projectErrors.socialLinks && <span role="alert" className="mt-1 block text-xs text-rose-600">{projectErrors.socialLinks}</span>}
                     </label>
                   </div>
+                  <label className={labelClass}>
+                    Documentation URL
+                    <input
+                      type="url"
+                      className={fieldClass}
+                      placeholder="https://docs.example.com/getting-started"
+                      value={form.documentationUrl}
+                      aria-invalid={Boolean(projectErrors.documentationUrl)}
+                      onChange={(event) => {
+                        setProjectErrors((errors) => ({ ...errors, documentationUrl: "" }));
+                        setForm((prev) => ({ ...prev, documentationUrl: event.target.value }));
+                      }}
+                    />
+                    {projectErrors.documentationUrl && (
+                      <span role="alert" className="mt-1 block text-xs text-rose-600">{projectErrors.documentationUrl}</span>
+                    )}
+                  </label>
+                  <section className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5" aria-labelledby="project-clients-heading">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h3 id="project-clients-heading" className="font-semibold text-slate-800">Clients / Organizations</h3>
+                        <p className="mt-1 text-xs text-slate-500">Add only verified or approved organizations. This section is optional.</p>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={form.clients.length >= 20}
+                        className="inline-flex items-center gap-2 rounded-lg border border-sky-200 bg-white px-3 py-2 text-sm font-semibold text-sky-700 disabled:opacity-50"
+                        onClick={() => {
+                          const key = `client-new-${++nextProofKey.current}`;
+                          setForm((prev) => ({
+                            ...prev,
+                            clients: [...prev.clients, { key, name: "", logo: "", website: "", description: "" }],
+                          }));
+                        }}
+                      >
+                        <FaPlus aria-hidden="true" /> Add Client
+                      </button>
+                    </div>
+                    {!form.clients.length && <p className="text-sm text-slate-500">No clients added.</p>}
+                    {form.clients.map((client, index) => {
+                      const error = (field: keyof ProjectClient) => projectErrors[`clients.${index}.${field}`];
+                      return (
+                        <fieldset key={client.key} className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-2">
+                          <legend className="sr-only">Client or organization {index + 1}</legend>
+                          <label className={labelClass}>
+                            Client / Organization Name
+                            <input
+                              className={fieldClass}
+                              placeholder="Verified organization name"
+                              value={client.name}
+                              aria-invalid={Boolean(error("name"))}
+                              onChange={(event) => {
+                                setProjectErrors((errors) => ({ ...errors, [`clients.${index}.name`]: "" }));
+                                setForm((prev) => ({
+                                  ...prev,
+                                  clients: prev.clients.map((item) => item.key === client.key ? { ...item, name: event.target.value } : item),
+                                }));
+                              }}
+                            />
+                            {error("name") && <span role="alert" className="mt-1 block text-xs text-rose-600">{error("name")}</span>}
+                          </label>
+                          <label className={labelClass}>
+                            Website
+                            <input
+                              type="url"
+                              className={fieldClass}
+                              placeholder="https://organization.example"
+                              value={client.website}
+                              aria-invalid={Boolean(error("website"))}
+                              onChange={(event) => {
+                                setProjectErrors((errors) => ({ ...errors, [`clients.${index}.website`]: "" }));
+                                setForm((prev) => ({
+                                  ...prev,
+                                  clients: prev.clients.map((item) => item.key === client.key ? { ...item, website: event.target.value } : item),
+                                }));
+                              }}
+                            />
+                            {error("website") && <span role="alert" className="mt-1 block text-xs text-rose-600">{error("website")}</span>}
+                          </label>
+                          <label className={labelClass}>
+                            Logo URL
+                            <input
+                              className={fieldClass}
+                              placeholder="https://... or /uploads/logo.png"
+                              value={client.logo}
+                              aria-invalid={Boolean(error("logo"))}
+                              onChange={(event) => {
+                                setProjectErrors((errors) => ({ ...errors, [`clients.${index}.logo`]: "" }));
+                                setForm((prev) => ({
+                                  ...prev,
+                                  clients: prev.clients.map((item) => item.key === client.key ? { ...item, logo: event.target.value } : item),
+                                }));
+                              }}
+                            />
+                            {error("logo") && <span role="alert" className="mt-1 block text-xs text-rose-600">{error("logo")}</span>}
+                          </label>
+                          <label className={labelClass}>
+                            Upload logo
+                            <input
+                              className="mt-2 block w-full text-sm"
+                              type="file"
+                              accept="image/*"
+                              onChange={(event) => {
+                                const file = event.target.files?.[0];
+                                if (file) {
+                                  void uploadFile(file, (url) => setForm((prev) => ({
+                                    ...prev,
+                                    clients: prev.clients.map((item) => item.key === client.key ? { ...item, logo: url } : item),
+                                  })));
+                                }
+                              }}
+                            />
+                          </label>
+                          <label className={`${labelClass} sm:col-span-2`}>
+                            Short Description
+                            <textarea
+                              className={`min-h-20 ${fieldClass}`}
+                              placeholder="Briefly describe the organization or its relationship to the project"
+                              value={client.description}
+                              aria-invalid={Boolean(error("description"))}
+                              onChange={(event) => {
+                                setProjectErrors((errors) => ({ ...errors, [`clients.${index}.description`]: "" }));
+                                setForm((prev) => ({
+                                  ...prev,
+                                  clients: prev.clients.map((item) => item.key === client.key ? { ...item, description: event.target.value } : item),
+                                }));
+                              }}
+                            />
+                            {error("description") && <span role="alert" className="mt-1 block text-xs text-rose-600">{error("description")}</span>}
+                          </label>
+                          <button
+                            type="button"
+                            className="inline-flex w-fit items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50 sm:col-span-2"
+                            onClick={() => {
+                              setForm((prev) => ({ ...prev, clients: prev.clients.filter((item) => item.key !== client.key) }));
+                            }}
+                          >
+                            <FaTrashAlt aria-hidden="true" /> Remove client
+                          </button>
+                        </fieldset>
+                      );
+                    })}
+                  </section>
+                  <section className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5" aria-labelledby="project-impact-heading">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h3 id="project-impact-heading" className="font-semibold text-slate-800">Project Impact</h3>
+                        <p className="mt-1 text-xs text-slate-500">Enter verified figures only. Up to 6 metrics.</p>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={form.impactMetrics.length >= 6}
+                        className="inline-flex items-center gap-2 rounded-lg border border-sky-200 bg-white px-3 py-2 text-sm font-semibold text-sky-700 disabled:opacity-50"
+                        onClick={() => {
+                          const key = `metric-new-${++nextProofKey.current}`;
+                          setForm((prev) => ({
+                            ...prev,
+                            impactMetrics: [...prev.impactMetrics, { key, label: "", value: "" }],
+                          }));
+                        }}
+                      >
+                        <FaPlus aria-hidden="true" /> Add Metric
+                      </button>
+                    </div>
+                    {!form.impactMetrics.length && <p className="text-sm text-slate-500">No impact metrics added.</p>}
+                    {form.impactMetrics.map((metric, index) => (
+                      <div key={metric.key} className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-[1fr_1fr_auto]">
+                        <label className={labelClass}>
+                          Label
+                          <input
+                            className={fieldClass}
+                            placeholder="Schools"
+                            value={metric.label}
+                            aria-invalid={Boolean(projectErrors[`impactMetrics.${index}.label`])}
+                            onChange={(event) => {
+                              setProjectErrors((errors) => ({ ...errors, [`impactMetrics.${index}.label`]: "" }));
+                              setForm((prev) => ({
+                                ...prev,
+                                impactMetrics: prev.impactMetrics.map((item) => item.key === metric.key ? { ...item, label: event.target.value } : item),
+                              }));
+                            }}
+                          />
+                          {projectErrors[`impactMetrics.${index}.label`] && <span role="alert" className="mt-1 block text-xs text-rose-600">{projectErrors[`impactMetrics.${index}.label`]}</span>}
+                        </label>
+                        <label className={labelClass}>
+                          Value
+                          <input
+                            className={fieldClass}
+                            placeholder="25+"
+                            value={metric.value}
+                            aria-invalid={Boolean(projectErrors[`impactMetrics.${index}.value`])}
+                            onChange={(event) => {
+                              setProjectErrors((errors) => ({ ...errors, [`impactMetrics.${index}.value`]: "" }));
+                              setForm((prev) => ({
+                                ...prev,
+                                impactMetrics: prev.impactMetrics.map((item) => item.key === metric.key ? { ...item, value: event.target.value } : item),
+                              }));
+                            }}
+                          />
+                          {projectErrors[`impactMetrics.${index}.value`] && <span role="alert" className="mt-1 block text-xs text-rose-600">{projectErrors[`impactMetrics.${index}.value`]}</span>}
+                        </label>
+                        <button
+                          type="button"
+                          aria-label={`Remove metric ${index + 1}`}
+                          className="mt-6 rounded-lg p-3 text-rose-600 hover:bg-rose-50"
+                          onClick={() => setForm((prev) => ({
+                            ...prev,
+                            impactMetrics: prev.impactMetrics.filter((item) => item.key !== metric.key),
+                          }))}
+                        >
+                          <FaTrashAlt aria-hidden="true" />
+                        </button>
+                      </div>
+                    ))}
+                  </section>
+                  <section className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5" aria-labelledby="project-testimonials-heading">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h3 id="project-testimonials-heading" className="font-semibold text-slate-800">Testimonials</h3>
+                        <p className="mt-1 text-xs text-slate-500">Use genuine testimonials only. Up to 5 per project.</p>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={form.testimonials.length >= 5}
+                        className="inline-flex items-center gap-2 rounded-lg border border-sky-200 bg-white px-3 py-2 text-sm font-semibold text-sky-700 disabled:opacity-50"
+                        onClick={() => {
+                          const key = `testimonial-new-${++nextProofKey.current}`;
+                          setForm((prev) => ({
+                            ...prev,
+                            testimonials: [...prev.testimonials, {
+                              key, quote: "", name: "", designation: "", organization: "", avatar: "",
+                            }],
+                          }));
+                        }}
+                      >
+                        <FaPlus aria-hidden="true" /> Add Testimonial
+                      </button>
+                    </div>
+                    {!form.testimonials.length && <p className="text-sm text-slate-500">No testimonials added.</p>}
+                    {form.testimonials.map((testimonial, index) => {
+                      const error = (field: keyof ProjectTestimonial) => projectErrors[`testimonials.${index}.${field}`];
+                      return (
+                        <fieldset key={testimonial.key} className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-2">
+                          <legend className="sr-only">Testimonial {index + 1}</legend>
+                          <label className={`${labelClass} sm:col-span-2`}>
+                            Quote
+                            <textarea
+                              className={`min-h-24 ${fieldClass}`}
+                              placeholder="A real quote from a client or project stakeholder"
+                              value={testimonial.quote}
+                              aria-invalid={Boolean(error("quote"))}
+                              onChange={(event) => {
+                                setProjectErrors((errors) => ({ ...errors, [`testimonials.${index}.quote`]: "" }));
+                                setForm((prev) => ({
+                                  ...prev,
+                                  testimonials: prev.testimonials.map((item) => item.key === testimonial.key ? { ...item, quote: event.target.value } : item),
+                                }));
+                              }}
+                            />
+                            {error("quote") && <span role="alert" className="mt-1 block text-xs text-rose-600">{error("quote")}</span>}
+                          </label>
+                          <label className={labelClass}>
+                            Name
+                            <input className={fieldClass} value={testimonial.name} onChange={(event) => {
+                              setForm((prev) => ({
+                                ...prev,
+                                testimonials: prev.testimonials.map((item) => item.key === testimonial.key ? { ...item, name: event.target.value } : item),
+                              }));
+                            }} />
+                            {error("name") && <span role="alert" className="mt-1 block text-xs text-rose-600">{error("name")}</span>}
+                          </label>
+                          <label className={labelClass}>
+                            Designation
+                            <input className={fieldClass} value={testimonial.designation} onChange={(event) => {
+                              setForm((prev) => ({
+                                ...prev,
+                                testimonials: prev.testimonials.map((item) => item.key === testimonial.key ? { ...item, designation: event.target.value } : item),
+                              }));
+                            }} />
+                            {error("designation") && <span role="alert" className="mt-1 block text-xs text-rose-600">{error("designation")}</span>}
+                          </label>
+                          <label className={labelClass}>
+                            Organization
+                            <input className={fieldClass} value={testimonial.organization} onChange={(event) => {
+                              setForm((prev) => ({
+                                ...prev,
+                                testimonials: prev.testimonials.map((item) => item.key === testimonial.key ? { ...item, organization: event.target.value } : item),
+                              }));
+                            }} />
+                            {error("organization") && <span role="alert" className="mt-1 block text-xs text-rose-600">{error("organization")}</span>}
+                          </label>
+                          <label className={labelClass}>
+                            Avatar URL
+                            <input
+                              className={fieldClass}
+                              placeholder="https://... or /uploads/avatar.png"
+                              value={testimonial.avatar}
+                              aria-invalid={Boolean(error("avatar"))}
+                              onChange={(event) => {
+                                setProjectErrors((errors) => ({ ...errors, [`testimonials.${index}.avatar`]: "" }));
+                                setForm((prev) => ({
+                                  ...prev,
+                                  testimonials: prev.testimonials.map((item) => item.key === testimonial.key ? { ...item, avatar: event.target.value } : item),
+                                }));
+                              }}
+                            />
+                            {error("avatar") && <span role="alert" className="mt-1 block text-xs text-rose-600">{error("avatar")}</span>}
+                          </label>
+                          <label className={labelClass}>
+                            Upload avatar
+                            <input
+                              className="mt-2 block w-full text-sm"
+                              type="file"
+                              accept="image/*"
+                              onChange={(event) => {
+                                const file = event.target.files?.[0];
+                                if (file) {
+                                  void uploadFile(file, (url) => setForm((prev) => ({
+                                    ...prev,
+                                    testimonials: prev.testimonials.map((item) => item.key === testimonial.key ? { ...item, avatar: url } : item),
+                                  })));
+                                }
+                              }}
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            className="inline-flex w-fit items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50 sm:col-span-2"
+                            onClick={() => setForm((prev) => ({
+                              ...prev,
+                              testimonials: prev.testimonials.filter((item) => item.key !== testimonial.key),
+                            }))}
+                          >
+                            <FaTrashAlt aria-hidden="true" /> Remove testimonial
+                          </button>
+                        </fieldset>
+                      );
+                    })}
+                  </section>
                   <label className={labelClass}>
                     Technologies
                     <input className={fieldClass} placeholder="React, Node.js, MongoDB" value={form.technologies} aria-invalid={Boolean(projectErrors.technologies)} onChange={(event) => {

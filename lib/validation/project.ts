@@ -6,6 +6,7 @@ import {
   mediaLocationSchema,
   objectIdSchema,
   optionalHttpsUrlSchema,
+  optionalMediaLocationSchema,
 } from "./common";
 
 const linkedinUrlSchema = z
@@ -47,6 +48,44 @@ const socialLinksSchema = z
     return links.linkedin ? { linkedin: links.linkedin } : {};
   });
 
+export const projectClientSchema = z.object({
+  name: z.string().trim()
+    .min(1, "Client or organization name is required.")
+    .max(120, "Name must be 120 characters or fewer."),
+  logo: optionalMediaLocationSchema,
+  website: optionalHttpsUrlSchema,
+  description: boundedString(240, "Client description").default(""),
+}).strict();
+
+export const projectMetricSchema = z.object({
+  label: z.string().trim()
+    .min(1, "Metric label is required.")
+    .max(60, "Metric label must be 60 characters or fewer."),
+  value: z.string().trim()
+    .min(1, "Metric value is required.")
+    .max(40, "Metric value must be 40 characters or fewer."),
+}).strict();
+
+export const projectTestimonialSchema = z.object({
+  quote: z.string().trim()
+    .min(10, "Testimonial quote must be at least 10 characters.")
+    .max(1200, "Testimonial quote must be 1,200 characters or fewer."),
+  name: boundedString(120, "Name").default(""),
+  designation: boundedString(120, "Designation").default(""),
+  organization: boundedString(120, "Organization").default(""),
+  avatar: optionalMediaLocationSchema,
+}).strict();
+
+const optionalDocumentationUrlSchema = z.union([
+  z.literal(""),
+  z.string().trim().max(2048, "Documentation URL must be 2,048 characters or fewer.")
+    .url("Enter a valid documentation URL.")
+    .refine((value) => {
+      const url = new URL(value);
+      return url.protocol === "https:" && !url.username && !url.password;
+    }, "Documentation URL must use HTTPS."),
+]).optional().default("").transform((value) => value || undefined);
+
 const projectShape = z.object({
   title: z.string().trim()
     .min(2, "Project title must be at least 2 characters.")
@@ -58,6 +97,16 @@ const projectShape = z.object({
   github: z.union([z.literal(""), githubUrlSchema]).default(""),
   demo: optionalHttpsUrlSchema,
   socialLinks: socialLinksSchema,
+  documentationUrl: optionalDocumentationUrlSchema,
+  clients: z.array(projectClientSchema)
+    .max(20, "Add no more than 20 clients or organizations.")
+    .default([]),
+  impactMetrics: z.array(projectMetricSchema)
+    .max(6, "Add no more than 6 impact metrics.")
+    .default([]),
+  testimonials: z.array(projectTestimonialSchema)
+    .max(5, "Add no more than 5 testimonials.")
+    .default([]),
   isVideo: z.boolean().default(false),
   technologies: boundedStringList(50, 60, "Technologies"),
   company: boundedString(120, "Company").default(""),
@@ -94,3 +143,6 @@ export const projectUpdateSchema = projectShape
   .superRefine((project, context) => validatePartnership(project, context));
 
 export type ProjectInput = z.output<typeof projectCreateSchema>;
+export type ProjectClient = z.output<typeof projectClientSchema>;
+export type ProjectMetric = z.output<typeof projectMetricSchema>;
+export type ProjectTestimonial = z.output<typeof projectTestimonialSchema>;

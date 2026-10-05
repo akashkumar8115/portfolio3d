@@ -18,6 +18,10 @@ type ProjectRecord = {
   github?: string;
   demo?: string;
   socialLinks?: { linkedin?: string | null } | null;
+  documentationUrl?: string | null;
+  clients?: PublicProject["clients"];
+  impactMetrics?: PublicProject["impactMetrics"];
+  testimonials?: PublicProject["testimonials"];
   isVideo?: boolean;
   technologies?: string[];
   company?: string;
@@ -56,6 +60,10 @@ export function serializeProject(project: ProjectRecord): PublicProject {
     github: project.github ?? "",
     demo: project.demo ?? "",
     socialLinks: project.socialLinks?.linkedin ? { linkedin: project.socialLinks.linkedin } : undefined,
+    documentationUrl: project.documentationUrl || undefined,
+    clients: project.clients ?? [],
+    impactMetrics: project.impactMetrics ?? [],
+    testimonials: project.testimonials ?? [],
     isVideo: Boolean(project.isVideo),
     technologies: project.technologies ?? [],
     company: project.company ?? "",

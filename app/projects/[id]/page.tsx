@@ -1,10 +1,12 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { FaExternalLinkAlt, FaGithub, FaLinkedin } from "react-icons/fa";
 import ProjectCard from "@/components/ProjectCard";
 import ProjectMedia from "@/components/ProjectMedia";
 import PublicShell from "@/components/PublicShell";
 import { getPublishedProject, listPublishedProjects } from "@/lib/content";
+import { getGoogleDriveImageSource } from "@/lib/projectMedia";
 
 export const dynamic = "force-dynamic";
 
@@ -57,6 +59,91 @@ export default async function ProjectDetailPage({ params }: Props) {
             <p className="mt-3 text-lg leading-8 text-slate-700">{project.description}</p>
           </section>
 
+          {project.clients.length > 0 && (
+            <section className="mt-12">
+              <h2 className="text-2xl font-bold text-slate-900">Clients &amp; Organizations</h2>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                {project.clients.map((client) => (
+                  <article key={`${client.name}-${client.website}`} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                    {client.logo && (
+                      <Image
+                        src={getGoogleDriveImageSource(client.logo)}
+                        alt={`${client.name} logo`}
+                        width={160}
+                        height={48}
+                        unoptimized
+                        className="mb-4 h-12 max-w-40 object-contain object-left"
+                      />
+                    )}
+                    <h3 className="text-lg font-semibold text-slate-900">{client.name}</h3>
+                    {client.description && <p className="mt-2 text-sm leading-6 text-slate-600">{client.description}</p>}
+                    {client.website && (
+                      <a
+                        href={client.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-sky-700 hover:text-sky-900"
+                      >
+                        Visit Website <FaExternalLinkAlt aria-hidden="true" />
+                      </a>
+                    )}
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {project.impactMetrics.length > 0 && (
+            <section className="mt-12">
+              <h2 className="text-2xl font-bold text-slate-900">Project Impact</h2>
+              <dl className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {project.impactMetrics.map((metric) => (
+                  <div key={`${metric.label}-${metric.value}`} className="rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 to-white p-6">
+                    <dd className="text-3xl font-bold tracking-tight text-sky-700">{metric.value}</dd>
+                    <dt className="mt-2 text-sm font-medium text-slate-600">{metric.label}</dt>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          )}
+
+          {project.testimonials.length > 0 && (
+            <section className="mt-12">
+              <h2 className="text-2xl font-bold text-slate-900">What They Say</h2>
+              <div className="mt-5 grid gap-4">
+                {project.testimonials.map((testimonial, index) => (
+                  <figure key={`${testimonial.name}-${index}`} className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+                    <blockquote className="whitespace-pre-wrap text-base leading-7 text-slate-700">
+                      “{testimonial.quote}”
+                    </blockquote>
+                    {(testimonial.name || testimonial.designation || testimonial.organization) && (
+                      <figcaption className="mt-5 flex items-center gap-3 border-t border-slate-200 pt-4">
+                        {testimonial.avatar && (
+                          <Image
+                            src={getGoogleDriveImageSource(testimonial.avatar)}
+                            alt=""
+                            width={44}
+                            height={44}
+                            unoptimized
+                            className="h-11 w-11 rounded-full object-cover"
+                          />
+                        )}
+                        <div>
+                          {testimonial.name && <p className="font-semibold text-slate-900">{testimonial.name}</p>}
+                          {[testimonial.designation, testimonial.organization].filter(Boolean).length > 0 && (
+                            <p className="mt-0.5 text-sm text-slate-500">
+                              {[testimonial.designation, testimonial.organization].filter(Boolean).join(" · ")}
+                            </p>
+                          )}
+                        </div>
+                      </figcaption>
+                    )}
+                  </figure>
+                ))}
+              </div>
+            </section>
+          )}
+
           {project.details && (
             <section className="mt-6">
               <h2 className="text-xl font-semibold text-slate-900">Project details</h2>
@@ -104,6 +191,11 @@ export default async function ProjectDetailPage({ params }: Props) {
             {project.socialLinks?.linkedin && (
               <a href={project.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-[#0A66C2] px-5 py-3 text-sm font-semibold text-white">
                 <FaLinkedin aria-hidden="true" /> LinkedIn
+              </a>
+            )}
+            {project.documentationUrl && (
+              <a href={project.documentationUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-5 py-3 text-sm font-semibold text-sky-800">
+                Documentation <FaExternalLinkAlt aria-hidden="true" />
               </a>
             )}
             {project.companySlug && (

@@ -14,6 +14,7 @@ export type ProjectCardData = {
   github: string;
   demo: string;
   socialLinks?: { linkedin?: string };
+  impactMetrics?: { label: string; value: string }[];
   isVideo: boolean;
   technologies: string[];
   company?: string;
@@ -70,6 +71,11 @@ export default function ProjectCard({
           <p className={`mt-2 text-sm leading-6 text-slate-600 ${compact ? "line-clamp-2" : "line-clamp-3"}`}>
             {project.description}
           </p>
+          {project.impactMetrics?.[0] && (
+            <p className="mt-2 text-xs font-semibold text-sky-700">
+              {project.impactMetrics[0].value} {project.impactMetrics[0].label}
+            </p>
+          )}
           {project.demo && (
             <p className="mt-2 truncate text-xs text-sky-700" title={project.demo}>
               Live: {project.demo}

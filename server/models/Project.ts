@@ -7,6 +7,35 @@ const socialLinksSchema = new Schema(
   { _id: false },
 );
 
+const projectClientSchema = new Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    logo: { type: String, default: "", trim: true },
+    website: { type: String, default: "", trim: true },
+    description: { type: String, default: "", trim: true },
+  },
+  { _id: false },
+);
+
+const projectMetricSchema = new Schema(
+  {
+    label: { type: String, required: true, trim: true },
+    value: { type: String, required: true, trim: true },
+  },
+  { _id: false },
+);
+
+const projectTestimonialSchema = new Schema(
+  {
+    quote: { type: String, required: true, trim: true },
+    name: { type: String, default: "", trim: true },
+    designation: { type: String, default: "", trim: true },
+    organization: { type: String, default: "", trim: true },
+    avatar: { type: String, default: "", trim: true },
+  },
+  { _id: false },
+);
+
 const projectSchema = new Schema(
   {
     title: { type: String, required: true, trim: true },
@@ -15,6 +44,10 @@ const projectSchema = new Schema(
     github: { type: String, default: "", trim: true },
     demo: { type: String, default: "", trim: true },
     socialLinks: { type: socialLinksSchema, default: undefined },
+    documentationUrl: { type: String, trim: true },
+    clients: { type: [projectClientSchema], default: [] },
+    impactMetrics: { type: [projectMetricSchema], default: [] },
+    testimonials: { type: [projectTestimonialSchema], default: [] },
     isVideo: { type: Boolean, default: false },
     technologies: { type: [String], default: [] },
     company: { type: String, default: "", trim: true },
