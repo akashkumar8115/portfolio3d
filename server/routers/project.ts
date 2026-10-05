@@ -5,6 +5,7 @@ import { connectDB } from "@/server/db";
 import { ProjectModel } from "@/server/models/Project";
 import { seedProjectsIfEmpty } from "@/server/seed";
 import { projectCategories } from "@/server/data/projects";
+import { serializeProject } from "@/lib/content";
 
 const linkedinUrl = z
   .string()
@@ -45,54 +46,6 @@ const projectInput = z.object({
   order: z.number().optional().default(0),
 });
 
-function serializeProject(project: {
-  _id: { toString(): string };
-  title: string;
-  description: string;
-  image: string;
-  github?: string;
-  demo?: string;
-  socialLinks?: { linkedin?: string | null } | null;
-  isVideo?: boolean;
-  technologies?: string[];
-  company?: string;
-  role?: string;
-  projectType?: string;
-  highlights?: string[];
-  details?: string;
-  kind?: string;
-  companySlug?: string;
-  category?: string;
-  published?: boolean;
-  order?: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-}) {
-  return {
-    id: project._id.toString(),
-    title: project.title,
-    description: project.description,
-    image: project.image,
-    github: project.github ?? "",
-    demo: project.demo ?? "",
-    socialLinks: project.socialLinks?.linkedin ? { linkedin: project.socialLinks.linkedin } : undefined,
-    isVideo: Boolean(project.isVideo),
-    technologies: project.technologies ?? [],
-    company: project.company ?? "",
-    role: project.role ?? "",
-    projectType: project.projectType ?? "",
-    highlights: project.highlights ?? [],
-    details: project.details ?? "",
-    kind: project.kind === "partnership" ? "partnership" : "personal",
-    companySlug: project.companySlug ?? "",
-    category: project.category ?? "Full Stack",
-    published: project.published !== false,
-    order: project.order ?? 0,
-    createdAt: project.createdAt?.toISOString() ?? null,
-    updatedAt: project.updatedAt?.toISOString() ?? null,
-  };
-}
-
 export const projectRouter = createTRPCRouter({
   getAll: publicProcedure
     .input(
@@ -104,7 +57,7 @@ export const projectRouter = createTRPCRouter({
     .query(async ({ input }) => {
       await connectDB();
       await seedProjectsIfEmpty();
-      const filter: Record<string, unknown> = { published: true };
+      const filter: Record<string, unknown> = { published: { $ne: false } };
       if (input.kind) {
         filter.kind = input.kind;
       }
@@ -116,7 +69,7 @@ export const projectRouter = createTRPCRouter({
     }),
   getById: publicProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {
     await connectDB();
-    const project = await ProjectModel.findOne({ _id: input.id, published: true }).lean();
+    const project = await ProjectModel.findOne({ _id: input.id, published: { $ne: false } }).lean();
     if (!project) {
       throw new TRPCError({ code: "NOT_FOUND", message: "Project not found." });
     }

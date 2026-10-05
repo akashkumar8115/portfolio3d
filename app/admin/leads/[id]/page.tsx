@@ -130,6 +130,62 @@ export default function AdminLeadDetailPage() {
                 </section>
               )}
 
+              {(lead.source || lead.utmSource || lead.utmCampaign || lead.referrer || lead.landingPage) && (
+                <section>
+                  <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">How they found you</h2>
+                  <dl className="mt-4 grid gap-4 sm:grid-cols-2">
+                    {lead.source && (
+                      <div>
+                        <dt className="text-xs text-slate-500">Source</dt>
+                        <dd className="mt-1 font-medium capitalize">{lead.source}</dd>
+                      </div>
+                    )}
+                    {lead.utmSource && (
+                      <div>
+                        <dt className="text-xs text-slate-500">Campaign source</dt>
+                        <dd className="mt-1 font-medium">{lead.utmSource}</dd>
+                      </div>
+                    )}
+                    {lead.utmMedium && (
+                      <div>
+                        <dt className="text-xs text-slate-500">Campaign medium</dt>
+                        <dd className="mt-1 font-medium">{lead.utmMedium}</dd>
+                      </div>
+                    )}
+                    {lead.utmCampaign && (
+                      <div>
+                        <dt className="text-xs text-slate-500">Campaign</dt>
+                        <dd className="mt-1 font-medium">{lead.utmCampaign}</dd>
+                      </div>
+                    )}
+                    {lead.utmContent && (
+                      <div>
+                        <dt className="text-xs text-slate-500">Campaign content</dt>
+                        <dd className="mt-1 font-medium">{lead.utmContent}</dd>
+                      </div>
+                    )}
+                    {lead.utmTerm && (
+                      <div>
+                        <dt className="text-xs text-slate-500">Campaign term</dt>
+                        <dd className="mt-1 font-medium">{lead.utmTerm}</dd>
+                      </div>
+                    )}
+                    {lead.referrer && (
+                      <div>
+                        <dt className="text-xs text-slate-500">Referrer</dt>
+                        <dd className="mt-1 break-all font-medium">{lead.referrer}</dd>
+                      </div>
+                    )}
+                    {lead.landingPage && (
+                      <div className="sm:col-span-2">
+                        <dt className="text-xs text-slate-500">Landing page</dt>
+                        <dd className="mt-1 break-all font-medium">{lead.landingPage}</dd>
+                      </div>
+                    )}
+                  </dl>
+                </section>
+              )}
+
               <section>
                 <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Project details</h2>
                 <p className="mt-3 whitespace-pre-wrap rounded-2xl bg-slate-50 p-5 text-sm leading-7 text-slate-700">{lead.message}</p>

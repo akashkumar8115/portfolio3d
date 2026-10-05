@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import SiteSearch from "@/components/SiteSearch";
 
 const links = [
@@ -18,14 +19,14 @@ export default function Navbar() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-xl">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
-        <a href="/#profile" className="flex min-w-0 items-center gap-3">
+        <Link href="/#profile" className="flex min-w-0 items-center gap-3">
           <img
             src="/images/image-ak.jpg"
             alt="Akash Kumar"
             className="h-10 w-10 rounded-full object-cover ring-2 ring-sky-500/40"
           />
           <span className="truncate text-lg font-semibold tracking-wide text-slate-900">AKASH KUMAR</span>
-        </a>
+        </Link>
         <ul className="hidden items-center gap-6 text-sm font-medium text-slate-700 lg:flex">
           {links.map((link) => (
             <li key={link.href}>

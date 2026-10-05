@@ -8,7 +8,7 @@ import { useTRPC } from "@/lib/trpc";
 export default function AdminLoginPage() {
   const trpc = useTRPC();
   const router = useRouter();
-  const [email, setEmail] = useState("akash@gmail.com");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
@@ -38,6 +38,7 @@ export default function AdminLoginPage() {
           Email
           <input
             type="email"
+            autoComplete="username"
             className="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none focus:border-sky-400"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
@@ -48,6 +49,7 @@ export default function AdminLoginPage() {
           Password
           <input
             type="password"
+            autoComplete="current-password"
             className="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none focus:border-sky-400"
             value={password}
             onChange={(event) => setPassword(event.target.value)}

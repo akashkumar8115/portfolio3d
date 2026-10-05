@@ -1,4 +1,5 @@
 import { absoluteUrl, SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE } from "@/lib/seo";
+import { getGoogleDriveImageSource } from "@/lib/projectMedia";
 
 export function websiteJsonLd() {
   return {
@@ -38,6 +39,16 @@ export function personJsonLd() {
   };
 }
 
+export function profilePageJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    name: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    url: absoluteUrl("/"),
+    mainEntity: personJsonLd(),
+  };
+}
+
 export function projectJsonLd(project: {
   id: string;
   title: string;
@@ -46,19 +57,19 @@ export function projectJsonLd(project: {
   image: string;
   github?: string;
   demo?: string;
+  socialLinks?: { linkedin?: string };
   technologies?: string[];
 }) {
   return {
     "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
+    "@type": "CreativeWork",
     name: project.title,
     description: project.details || project.description,
-    image: absoluteUrl(project.image),
+    image: absoluteUrl(getGoogleDriveImageSource(project.image)),
     url: absoluteUrl(`/projects/${project.id}`),
-    applicationCategory: "WebApplication",
     author: { "@type": "Person", name: SITE_NAME },
     keywords: (project.technologies ?? []).join(", "),
-    ...(project.demo ? { installUrl: project.demo, sameAs: [project.demo, project.github].filter(Boolean) } : {}),
+    sameAs: [project.demo, project.github, project.socialLinks?.linkedin].filter(Boolean),
   };
 }
 
@@ -69,8 +80,8 @@ export function blogJsonLd(blog: {
   content: string;
   image?: string;
   tags?: string[];
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
 }) {
   return {
     "@context": "https://schema.org",
@@ -78,10 +89,10 @@ export function blogJsonLd(blog: {
     headline: blog.title,
     description: blog.excerpt,
     articleBody: blog.content,
-    image: blog.image ? absoluteUrl(blog.image) : absoluteUrl("/images/image-ak.jpg"),
+    image: absoluteUrl(getGoogleDriveImageSource(blog.image || "/images/image-ak.jpg")),
     url: absoluteUrl(`/blogs/${blog.id}`),
-    datePublished: blog.createdAt,
-    dateModified: blog.updatedAt || blog.createdAt,
+    ...(blog.createdAt ? { datePublished: blog.createdAt } : {}),
+    ...(blog.updatedAt || blog.createdAt ? { dateModified: blog.updatedAt || blog.createdAt } : {}),
     author: { "@type": "Person", name: SITE_NAME, url: absoluteUrl("/") },
     publisher: { "@type": "Person", name: SITE_NAME },
     keywords: (blog.tags ?? []).join(", "),

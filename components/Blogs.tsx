@@ -5,10 +5,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/lib/trpc";
 import AutoCarousel from "@/components/AutoCarousel";
 import BlogCard from "@/components/BlogCard";
+import type { PublicBlog } from "@/lib/contentTypes";
 
-export default function Blogs() {
+export default function Blogs({ initialBlogs }: { initialBlogs: PublicBlog[] }) {
   const trpc = useTRPC();
-  const blogsQuery = useQuery(trpc.blog.getAll.queryOptions());
+  const blogsQuery = useQuery({
+    ...trpc.blog.getAll.queryOptions(),
+    initialData: initialBlogs,
+  });
   const blogs = blogsQuery.data ?? [];
 
   return (

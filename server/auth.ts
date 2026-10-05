@@ -9,7 +9,10 @@ export type AdminSession = {
 };
 
 function getSecret() {
-  const secret = process.env.AUTH_SECRET ?? "akash-portfolio-dev-secret";
+  const secret = process.env.AUTH_SECRET;
+  if (!secret || secret.length < 32) {
+    throw new Error("AUTH_SECRET must be configured with at least 32 characters.");
+  }
   return new TextEncoder().encode(secret);
 }
 
@@ -69,8 +72,13 @@ export async function clearSessionCookie() {
 }
 
 export function getAdminCredentials() {
+  const email = process.env.ADMIN_EMAIL;
+  const password = process.env.ADMIN_PASSWORD;
+  if (!email || !password) {
+    throw new Error("ADMIN_EMAIL and ADMIN_PASSWORD must be configured before admin login.");
+  }
   return {
-    email: process.env.ADMIN_EMAIL ?? "akash@gmail.com",
-    password: process.env.ADMIN_PASSWORD ?? "Admin@123",
+    email,
+    password,
   };
 }

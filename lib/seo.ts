@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { getGoogleDriveImageSource } from "@/lib/projectMedia";
 
 export const SITE_NAME = "Akash Kumar";
-export const SITE_TAGLINE = "Tech Entrepreneur & Strategic Partner";
+export const SITE_TAGLINE = "Technology Leader · Product Strategist · Full-Stack Engineer";
 export const SITE_DESCRIPTION =
-  "Tech entrepreneur and strategic partner across Intopie, VRV InfoLed, SKDS, and AM Future Tech Solution. SaaS products, enterprise web platforms, and digital transformation.";
+  "Akash Kumar is a technology leader, product strategist, and full-stack engineer working across SaaS products, software architecture, enterprise platforms, and custom software.";
 
 export function getSiteUrl() {
   const raw = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
@@ -13,7 +14,7 @@ export function getSiteUrl() {
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
   }
-  return "http://localhost:3000";
+  return process.env.NODE_ENV === "production" ? "https://akashkumar.skds.in" : "http://localhost:3000";
 }
 
 export function absoluteUrl(path = "/") {
@@ -50,7 +51,7 @@ export function pageMetadata({
   noIndex?: boolean;
 }): Metadata {
   const url = absoluteUrl(path);
-  const ogImage = absoluteUrl(image || "/images/image-ak.jpg");
+  const ogImage = absoluteUrl(getGoogleDriveImageSource(image || "/images/image-ak.jpg"));
   const fullTitle = title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`;
 
   return {

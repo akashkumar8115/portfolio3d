@@ -12,7 +12,18 @@ import {
   type InquiryInput,
 } from "@/lib/leadValidation";
 
-type InquiryDraft = Omit<InquiryInput, "service"> & { service: InquiryInput["service"] | "" };
+type InquiryDraft = Omit<
+  InquiryInput,
+  | "service"
+  | "source"
+  | "landingPage"
+  | "referrer"
+  | "utmSource"
+  | "utmMedium"
+  | "utmCampaign"
+  | "utmContent"
+  | "utmTerm"
+> & { service: InquiryInput["service"] | "" };
 
 const initialForm: InquiryDraft = {
   name: "",
@@ -28,6 +39,35 @@ const initialForm: InquiryDraft = {
 const inputClass =
   "mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100";
 const labelClass = "block text-left text-sm font-semibold text-slate-700";
+
+function getInquiryAttribution(): Pick<
+  InquiryInput,
+  "source" | "landingPage" | "referrer" | "utmSource" | "utmMedium" | "utmCampaign" | "utmContent" | "utmTerm"
+> {
+  const page = new URL(window.location.href);
+  const referrer = document.referrer;
+  const referrerUrl = referrer ? new URL(referrer) : null;
+  const utmSource = page.searchParams.get("utm_source")?.slice(0, 150) ?? "";
+  const sourceHint = (utmSource || referrerUrl?.hostname || "").toLowerCase();
+  const source = sourceHint.includes("google")
+    ? "google"
+    : sourceHint.includes("linkedin")
+      ? "linkedin"
+      : sourceHint
+        ? "referral"
+        : "direct";
+
+  return {
+    source,
+    landingPage: page.pathname.slice(0, 500),
+    referrer: referrerUrl?.origin.slice(0, 500) ?? "",
+    utmSource,
+    utmMedium: page.searchParams.get("utm_medium")?.slice(0, 150) ?? "",
+    utmCampaign: page.searchParams.get("utm_campaign")?.slice(0, 150) ?? "",
+    utmContent: page.searchParams.get("utm_content")?.slice(0, 150) ?? "",
+    utmTerm: page.searchParams.get("utm_term")?.slice(0, 150) ?? "",
+  };
+}
 
 export default function ContactForm() {
   const trpc = useTRPC();
@@ -61,7 +101,7 @@ export default function ContactForm() {
       return;
     }
     setErrors({});
-    sendMessage.mutate(parsed.data);
+    sendMessage.mutate({ ...parsed.data, ...getInquiryAttribution() });
   };
 
   const setField = (field: keyof InquiryDraft, value: string) => {
@@ -150,12 +190,12 @@ export default function ContactForm() {
                 value={formData.message}
                 onChange={(event) => setField("message", event.target.value)}
                 aria-invalid={Boolean(errors.message)}
-                minLength={20}
+                minLength={10}
                 maxLength={5000}
                 required
               />
               <span className="mt-1 flex justify-between text-xs text-slate-500">
-                {errors.message ? <span className="text-red-600">{errors.message}</span> : <span>At least 20 characters</span>}
+                {errors.message ? <span className="text-red-600">{errors.message}</span> : <span>At least 10 characters</span>}
                 <span>{formData.message.length}/5000</span>
               </span>
             </label>

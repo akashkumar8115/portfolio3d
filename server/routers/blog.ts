@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { adminProcedure, createTRPCRouter, publicProcedure } from "@/server/trpc";
 import { connectDB } from "@/server/db";
 import { BlogModel } from "@/server/models/Blog";
+import { serializeBlog } from "@/lib/content";
 
 const blogInput = z.object({
   title: z.string().min(2),
@@ -14,41 +15,15 @@ const blogInput = z.object({
   order: z.number().optional().default(0),
 });
 
-function serializeBlog(item: {
-  _id: { toString(): string };
-  title: string;
-  excerpt: string;
-  content: string;
-  image?: string;
-  tags?: string[];
-  published?: boolean;
-  order?: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-}) {
-  return {
-    id: item._id.toString(),
-    title: item.title,
-    excerpt: item.excerpt,
-    content: item.content,
-    image: item.image ?? "",
-    tags: item.tags ?? [],
-    published: item.published !== false,
-    order: item.order ?? 0,
-    createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : null,
-    updatedAt: item.updatedAt instanceof Date ? item.updatedAt.toISOString() : null,
-  };
-}
-
 export const blogRouter = createTRPCRouter({
   getAll: publicProcedure.query(async () => {
     await connectDB();
-    const blogs = await BlogModel.find({ published: true }).sort({ order: 1, createdAt: -1 }).lean();
+    const blogs = await BlogModel.find({ published: { $ne: false } }).sort({ order: 1, createdAt: -1 }).lean();
     return blogs.map(serializeBlog);
   }),
   getById: publicProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {
     await connectDB();
-    const blog = await BlogModel.findOne({ _id: input.id, published: true }).lean();
+    const blog = await BlogModel.findOne({ _id: input.id, published: { $ne: false } }).lean();
     if (!blog) {
       throw new TRPCError({ code: "NOT_FOUND", message: "Blog not found." });
     }

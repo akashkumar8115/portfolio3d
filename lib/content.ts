@@ -1,95 +1,124 @@
+import { cache } from "react";
 import { Types } from "mongoose";
 import { connectDB } from "@/server/db";
 import { BlogModel } from "@/server/models/Blog";
 import { ProjectModel } from "@/server/models/Project";
 import { ventures } from "@/server/data/projects";
+import type { PublicBlog, PublicProject } from "@/lib/contentTypes";
 
 function isId(id: string) {
   return Types.ObjectId.isValid(id);
 }
 
-export async function getPublishedProject(id: string) {
+type ProjectRecord = {
+  _id: { toString(): string };
+  title: string;
+  description: string;
+  image: string;
+  github?: string;
+  demo?: string;
+  socialLinks?: { linkedin?: string | null } | null;
+  isVideo?: boolean;
+  technologies?: string[];
+  company?: string;
+  role?: string;
+  projectType?: string;
+  highlights?: string[];
+  details?: string;
+  kind?: string;
+  companySlug?: string;
+  category?: string;
+  published?: boolean;
+  order?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+type BlogRecord = {
+  _id: { toString(): string };
+  title: string;
+  excerpt: string;
+  content: string;
+  image?: string;
+  tags?: string[];
+  published?: boolean;
+  order?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+export function serializeProject(project: ProjectRecord): PublicProject {
+  return {
+    id: project._id.toString(),
+    title: project.title,
+    description: project.description,
+    image: project.image,
+    github: project.github ?? "",
+    demo: project.demo ?? "",
+    socialLinks: project.socialLinks?.linkedin ? { linkedin: project.socialLinks.linkedin } : undefined,
+    isVideo: Boolean(project.isVideo),
+    technologies: project.technologies ?? [],
+    company: project.company ?? "",
+    role: project.role ?? "",
+    projectType: project.projectType ?? "",
+    highlights: project.highlights ?? [],
+    details: project.details ?? "",
+    kind: project.kind === "partnership" ? "partnership" : "personal",
+    companySlug: project.companySlug ?? "",
+    category: project.category ?? "Full Stack",
+    published: project.published !== false,
+    order: project.order ?? 0,
+    createdAt: project.createdAt?.toISOString() ?? null,
+    updatedAt: project.updatedAt?.toISOString() ?? null,
+  };
+}
+
+export function serializeBlog(blog: BlogRecord): PublicBlog {
+  return {
+    id: blog._id.toString(),
+    title: blog.title,
+    excerpt: blog.excerpt,
+    content: blog.content,
+    image: blog.image ?? "",
+    tags: blog.tags ?? [],
+    published: blog.published !== false,
+    order: blog.order ?? 0,
+    createdAt: blog.createdAt?.toISOString() ?? null,
+    updatedAt: blog.updatedAt?.toISOString() ?? null,
+  };
+}
+
+export const getPublishedProject = cache(async (id: string): Promise<PublicProject | null> => {
   if (!isId(id)) {
     return null;
   }
-  try {
-    await connectDB();
-    const project = await ProjectModel.findOne({ _id: id, published: true }).lean();
-    if (!project) {
-      return null;
-    }
-    return {
-      id: String(project._id),
-      title: project.title,
-      description: project.description,
-      details: project.details ?? "",
-      image: project.image,
-      github: project.github ?? "",
-      demo: project.demo ?? "",
-      technologies: project.technologies ?? [],
-      highlights: project.highlights ?? [],
-      company: project.company ?? "",
-      role: project.role ?? "",
-      kind: project.kind === "partnership" ? "partnership" : "personal",
-      companySlug: project.companySlug ?? "",
-      updatedAt: project.updatedAt instanceof Date ? project.updatedAt.toISOString() : undefined,
-    };
-  } catch {
-    return null;
-  }
-}
+  await connectDB();
+  const project = await ProjectModel.findOne({ _id: id, published: { $ne: false } }).lean();
+  return project ? serializeProject(project) : null;
+});
 
-export async function getPublishedBlog(id: string) {
+export const getPublishedBlog = cache(async (id: string): Promise<PublicBlog | null> => {
   if (!isId(id)) {
     return null;
   }
-  try {
-    await connectDB();
-    const blog = await BlogModel.findOne({ _id: id, published: true }).lean();
-    if (!blog) {
-      return null;
-    }
-    return {
-      id: String(blog._id),
-      title: blog.title,
-      excerpt: blog.excerpt,
-      content: blog.content,
-      image: blog.image ?? "",
-      tags: blog.tags ?? [],
-      createdAt: blog.createdAt instanceof Date ? blog.createdAt.toISOString() : undefined,
-      updatedAt: blog.updatedAt instanceof Date ? blog.updatedAt.toISOString() : undefined,
-    };
-  } catch {
-    return null;
-  }
-}
+  await connectDB();
+  const blog = await BlogModel.findOne({ _id: id, published: { $ne: false } }).lean();
+  return blog ? serializeBlog(blog) : null;
+});
 
-export async function listPublishedProjects() {
-  try {
-    await connectDB();
-    const projects = await ProjectModel.find({ published: true }).select("title updatedAt").lean();
-    return projects.map((project) => ({
-      id: String(project._id),
-      title: project.title,
-      updatedAt: project.updatedAt instanceof Date ? project.updatedAt : undefined,
-    }));
-  } catch {
-    return [];
-  }
+export async function listPublishedProjects(filters: { kind?: "personal" | "partnership"; companySlug?: string } = {}) {
+  await connectDB();
+  const query: Record<string, unknown> = { published: { $ne: false } };
+  if (filters.kind) query.kind = filters.kind;
+  if (filters.companySlug) query.companySlug = filters.companySlug;
+  const projects = await ProjectModel.find(query).sort({ order: 1, createdAt: -1 }).lean();
+  return projects.map(serializeProject);
 }
 
 export async function listPublishedBlogs() {
-  try {
-    await connectDB();
-    const blogs = await BlogModel.find({ published: true }).select("title updatedAt").lean();
-    return blogs.map((blog) => ({
-      id: String(blog._id),
-      title: blog.title,
-      updatedAt: blog.updatedAt instanceof Date ? blog.updatedAt : undefined,
-    }));
-  } catch {
-    return [];
-  }
+  await connectDB();
+  const blogs = await BlogModel.find({ published: { $ne: false } }).sort({ order: 1, createdAt: -1 }).lean();
+  return blogs.map(serializeBlog);
 }
 
 export function getVenture(slug: string) {

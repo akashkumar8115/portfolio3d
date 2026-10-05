@@ -14,6 +14,14 @@ function serializeMessage(item: {
   service?: string;
   budget?: string;
   timeline?: string;
+  source?: string;
+  landingPage?: string;
+  referrer?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
+  utmTerm?: string;
   message: string;
   read?: boolean;
   createdAt?: Date;
@@ -27,6 +35,14 @@ function serializeMessage(item: {
     service: item.service ?? "",
     budget: item.budget ?? "",
     timeline: item.timeline ?? "",
+    source: item.source ?? "direct",
+    landingPage: item.landingPage ?? "",
+    referrer: item.referrer ?? "",
+    utmSource: item.utmSource ?? "",
+    utmMedium: item.utmMedium ?? "",
+    utmCampaign: item.utmCampaign ?? "",
+    utmContent: item.utmContent ?? "",
+    utmTerm: item.utmTerm ?? "",
     message: item.message,
     read: Boolean(item.read),
     createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : null,

@@ -104,7 +104,7 @@ export default function AdminDashboardPage() {
     return messages.filter((lead) => {
       const matchesQuery =
         !query ||
-        [lead.name, lead.email, lead.phone, lead.company, lead.service, lead.message]
+        [lead.name, lead.email, lead.phone, lead.company, lead.service, lead.source, lead.message]
           .some((value) => value?.toLowerCase().includes(query));
       const matchesRead =
         leadReadFilter === "all" ||

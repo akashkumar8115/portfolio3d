@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { jwtVerify } from "jose";
-import { SESSION_COOKIE } from "@/server/auth";
+import { readSessionToken, SESSION_COOKIE } from "@/server/auth";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -14,13 +13,10 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/admin/login", request.url));
   }
 
-  try {
-    const secret = new TextEncoder().encode(process.env.AUTH_SECRET ?? "akash-portfolio-dev-secret");
-    await jwtVerify(token, secret);
+  if (await readSessionToken(token)) {
     return NextResponse.next();
-  } catch {
-    return NextResponse.redirect(new URL("/admin/login", request.url));
   }
+  return NextResponse.redirect(new URL("/admin/login", request.url));
 }
 
 export const config = {

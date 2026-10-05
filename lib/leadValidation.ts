@@ -1,13 +1,16 @@
 import { z } from "zod";
 
 export const inquiryServices = [
-  "SaaS product or MVP",
-  "Website or web application",
-  "Product strategy",
-  "Technical consulting",
-  "Engineering partnership",
+  "SaaS Product",
+  "Custom Software",
+  "Enterprise Platform",
+  "Product Architecture",
+  "Technical Consulting",
+  "Digital Transformation",
   "Other",
 ] as const;
+
+export const inquirySources = ["google", "linkedin", "direct", "referral"] as const;
 
 export const inquiryBudgets = [
   "Under $5,000",
@@ -33,7 +36,15 @@ export const inquirySchema = z.object({
   service: z.enum(inquiryServices, { error: "Choose the support you need." }),
   budget: z.union([z.enum(inquiryBudgets), z.literal("")]),
   timeline: z.union([z.enum(inquiryTimelines), z.literal("")]),
-  message: z.string().trim().min(20, "Please tell us a little more (at least 20 characters).").max(5000),
+  message: z.string().trim().min(10, "Please add a few details (at least 10 characters).").max(5000),
+  source: z.enum(inquirySources).optional().default("direct"),
+  landingPage: z.string().max(500).optional().default(""),
+  referrer: z.string().max(500).optional().default(""),
+  utmSource: z.string().max(150).optional().default(""),
+  utmMedium: z.string().max(150).optional().default(""),
+  utmCampaign: z.string().max(150).optional().default(""),
+  utmContent: z.string().max(150).optional().default(""),
+  utmTerm: z.string().max(150).optional().default(""),
 });
 
 export type InquiryInput = z.infer<typeof inquirySchema>;

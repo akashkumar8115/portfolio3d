@@ -22,12 +22,28 @@ export const authRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input }) => {
-      const admin = getAdminCredentials();
+      let admin: ReturnType<typeof getAdminCredentials>;
+      try {
+        admin = getAdminCredentials();
+      } catch {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "Admin login is not configured. Set ADMIN_EMAIL and ADMIN_PASSWORD.",
+        });
+      }
       if (input.email !== admin.email || input.password !== admin.password) {
         throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid email or password." });
       }
 
-      const token = await createSessionToken({ email: admin.email, role: "admin" });
+      let token: string;
+      try {
+        token = await createSessionToken({ email: admin.email, role: "admin" });
+      } catch {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "Admin sessions are not configured. Set AUTH_SECRET to at least 32 characters.",
+        });
+      }
       await setSessionCookie(token);
       return { email: admin.email, role: "admin" as const };
     }),
