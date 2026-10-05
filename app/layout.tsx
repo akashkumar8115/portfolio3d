@@ -5,10 +5,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
-  title: {
-    default: `${SITE_NAME} | ${SITE_TAGLINE}`,
-    template: `%s | ${SITE_NAME}`,
-  },
+  title: `${SITE_NAME} | ${SITE_TAGLINE}`,
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
   authors: [{ name: SITE_NAME, url: getSiteUrl() }],
@@ -46,7 +43,6 @@ export const metadata: Metadata = {
     images: ["/images/image-ak.jpg"],
   },
   robots: { index: true, follow: true },
-  alternates: { canonical: "/" },
 };
 
 export default function RootLayout({

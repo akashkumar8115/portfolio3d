@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const description = project.description;
   return pageMetadata({
-    title: project.title,
+    title: project.projectType ? `${project.title} | ${project.projectType}` : project.title,
     description,
     path: `/projects/${project.id}`,
     image: project.isVideo ? undefined : project.image,

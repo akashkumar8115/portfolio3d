@@ -7,14 +7,17 @@ export const SITE_DESCRIPTION =
   "Akash Kumar is a technology leader, product strategist, and full-stack engineer working across SaaS products, software architecture, enterprise platforms, and custom software.";
 
 export function getSiteUrl() {
-  const raw = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
-  if (raw) {
-    return raw;
+  if (process.env.NODE_ENV === "production") {
+    return "https://akashkumar.skds.in";
   }
+
+  const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (configuredUrl) return new URL(configuredUrl).origin;
+
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
   }
-  return process.env.NODE_ENV === "production" ? "https://akashkumar.skds.in" : "http://localhost:3000";
+  return "http://localhost:3000";
 }
 
 export function absoluteUrl(path = "/") {

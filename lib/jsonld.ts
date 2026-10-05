@@ -24,7 +24,7 @@ export function personJsonLd() {
     jobTitle: SITE_TAGLINE,
     url: absoluteUrl("/"),
     image: absoluteUrl("/images/image-ak.jpg"),
-    email: "mailto:akash2884182@gmail.com",
+    email: "akash2884182@gmail.com",
     sameAs: [
       "https://www.linkedin.com/in/akash-kumar-54073a209/",
       "https://github.com/akashkumar8115",
@@ -69,16 +69,19 @@ export function projectJsonLd(project: {
     "@context": "https://schema.org",
     "@type": "CreativeWork",
     name: project.title,
-    description: project.details || project.description,
-    image: absoluteUrl(getGoogleDriveImageSource(project.isVideo ? "/images/image-ak.jpg" : project.image)),
+    description: project.description,
     url: pageUrl,
     mainEntityOfPage: pageUrl,
     author: { "@type": "Person", name: SITE_NAME },
-    keywords: (project.technologies ?? []).join(", "),
+    ...(project.technologies?.length
+      ? { keywords: project.technologies.join(", ") }
+      : {}),
+    ...(!project.isVideo && project.image
+      ? { image: absoluteUrl(getGoogleDriveImageSource(project.image)) }
+      : {}),
     ...(project.category ? { genre: project.category } : {}),
     ...(project.createdAt ? { dateCreated: project.createdAt } : {}),
     ...(project.updatedAt || project.createdAt ? { dateModified: project.updatedAt || project.createdAt } : {}),
-    sameAs: [project.demo, project.github, project.socialLinks?.linkedin].filter(Boolean),
   };
 }
 
@@ -98,13 +101,15 @@ export function blogJsonLd(blog: {
     headline: blog.title,
     description: blog.excerpt,
     articleBody: blog.content,
-    image: absoluteUrl(getGoogleDriveImageSource(blog.image || "/images/image-ak.jpg")),
+    ...(blog.image
+      ? { image: absoluteUrl(getGoogleDriveImageSource(blog.image)) }
+      : {}),
     url: absoluteUrl(`/blogs/${blog.id}`),
     ...(blog.createdAt ? { datePublished: blog.createdAt } : {}),
     ...(blog.updatedAt || blog.createdAt ? { dateModified: blog.updatedAt || blog.createdAt } : {}),
     author: { "@type": "Person", name: SITE_NAME, url: absoluteUrl("/") },
     publisher: { "@type": "Person", name: SITE_NAME },
-    keywords: (blog.tags ?? []).join(", "),
+    ...(blog.tags?.length ? { keywords: blog.tags.join(", ") } : {}),
     mainEntityOfPage: absoluteUrl(`/blogs/${blog.id}`),
   };
 }

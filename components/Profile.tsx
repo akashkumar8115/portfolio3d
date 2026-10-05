@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -57,10 +58,10 @@ export default function Profile() {
           </div>
           <div className="mt-8 flex items-center justify-center gap-4 md:justify-start">
             <a href="https://www.linkedin.com/in/akash-kumar-54073a209/" target="_blank" rel="noopener noreferrer" aria-label="Akash Kumar on LinkedIn">
-              <img src="/images/linkedin.png" alt="LinkedIn" className="h-10 w-10 rounded-full border border-white/20 bg-white p-1" />
+              <Image src="/images/linkedin.png" alt="" width={40} height={40} className="h-10 w-10 rounded-full border border-white/20 bg-white p-1" />
             </a>
             <a href="https://github.com/akashkumar8115" target="_blank" rel="noopener noreferrer" aria-label="Akash Kumar on GitHub">
-              <img src="/images/github.png" alt="GitHub" className="h-10 w-10 rounded-full border border-white/20 bg-white p-1" />
+              <Image src="/images/github.png" alt="" width={40} height={40} className="h-10 w-10 rounded-full border border-white/20 bg-white p-1" />
             </a>
           </div>
         </motion.div>

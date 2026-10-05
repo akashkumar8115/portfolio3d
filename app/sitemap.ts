@@ -19,19 +19,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const [projects, blogs] = await Promise.all([listPublishedProjects(), listPublishedBlogs()]);
 
-  const projectRoutes = projects.map((project) => ({
-    url: absoluteUrl(`/projects/${project.id}`),
-    ...(project.updatedAt ? { lastModified: project.updatedAt } : {}),
-    changeFrequency: "monthly" as const,
-    priority: 0.8,
-  }));
+  const projectRoutes = projects.map((project) => {
+    const lastModified = project.updatedAt ?? project.createdAt;
+    return {
+      url: absoluteUrl(`/projects/${project.id}`),
+      ...(lastModified ? { lastModified } : {}),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    };
+  });
 
-  const blogRoutes = blogs.map((blog) => ({
-    url: absoluteUrl(`/blogs/${blog.id}`),
-    ...(blog.updatedAt ? { lastModified: blog.updatedAt } : {}),
-    changeFrequency: "weekly" as const,
-    priority: 0.75,
-  }));
+  const blogRoutes = blogs.map((blog) => {
+    const lastModified = blog.updatedAt ?? blog.createdAt;
+    return {
+      url: absoluteUrl(`/blogs/${blog.id}`),
+      ...(lastModified ? { lastModified } : {}),
+      changeFrequency: "weekly" as const,
+      priority: 0.75,
+    };
+  });
 
   return [...staticRoutes, ...ventureRoutes, ...projectRoutes, ...blogRoutes];
 }

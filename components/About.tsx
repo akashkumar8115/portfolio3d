@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 
@@ -20,9 +21,12 @@ export default function About() {
             className="group relative mx-auto h-72 w-72 [perspective:1000px]"
           >
             <div className="relative h-full w-full transition-transform duration-700 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
-              <img
+              <Image
                 src="/images/profilepic.jpg"
                 alt="Akash Kumar"
+                width={288}
+                height={288}
+                sizes="288px"
                 className="absolute inset-0 h-full w-full rounded-3xl object-cover shadow-2xl [backface-visibility:hidden]"
               />
               <div className="absolute inset-0 rounded-3xl bg-white p-6 text-sm text-slate-700 shadow-xl [backface-visibility:hidden] [transform:rotateY(180deg)]">

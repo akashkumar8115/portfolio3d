@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { getGoogleDriveImageSource } from "@/lib/projectMedia";
@@ -23,13 +24,15 @@ export default function BlogCard({ blog, compact = false }: { blog: BlogCardData
         whileHover={{ y: -8, scale: 1.015 }}
         className="h-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_12px_40px_rgba(15,23,42,0.08)]"
       >
-        <div className={`overflow-hidden bg-slate-100 ${compact ? "h-40" : "h-48"}`}>
+        <div className={`relative overflow-hidden bg-slate-100 ${compact ? "h-40" : "h-48"}`}>
           {blog.image ? (
-            <img
+            <Image
               src={getGoogleDriveImageSource(blog.image)}
-              alt={blog.title}
+              alt={`${blog.title} cover`}
+              fill
+              sizes={compact ? "300px" : "(max-width: 768px) 100vw, 33vw"}
+              unoptimized={blog.image.startsWith("http")}
               className="h-full w-full object-cover"
-              loading="lazy"
             />
           ) : (
             <div className="flex h-full items-center justify-center bg-gradient-to-br from-sky-100 to-slate-100 text-sm font-semibold text-sky-700">
