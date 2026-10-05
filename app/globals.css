@@ -15,6 +15,15 @@ body {
   overflow-x: hidden;
 }
 
+button:not(:disabled),
+a[href] {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
 @keyframes skill-orbit {
   to {
     transform: rotate(360deg);

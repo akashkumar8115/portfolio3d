@@ -1,7 +1,8 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   FaBell,
@@ -9,10 +10,12 @@ import {
   FaChartPie,
   FaEnvelopeOpenText,
   FaExternalLinkAlt,
+  FaLinkedin,
   FaPen,
   FaPlus,
   FaSignOutAlt,
   FaTimes,
+  FaTrashAlt,
 } from "react-icons/fa";
 import { useTRPC } from "@/lib/trpc";
 import { ventures } from "@/server/data/projects";
@@ -24,11 +27,13 @@ const emptyForm = {
   image: "",
   github: "",
   demo: "",
+  linkedin: "",
   isVideo: false,
   technologies: "",
   highlights: "",
   details: "",
   role: "",
+  projectType: "",
   kind: "personal" as "personal" | "partnership",
   companySlug: "",
   company: "",
@@ -55,9 +60,17 @@ function notifyBrowser(title: string, body: string) {
 
 export default function AdminDashboardPage() {
   const trpc = useTRPC();
+  const queryClient = useQueryClient();
   const router = useRouter();
   const [form, setForm] = useState<FormState>(emptyForm);
   const [status, setStatus] = useState("");
+  const [statusIsError, setStatusIsError] = useState(false);
+  const [leadStatus, setLeadStatus] = useState("");
+  const [leadStatusIsError, setLeadStatusIsError] = useState(false);
+  const [projectSearch, setProjectSearch] = useState("");
+  const [projectPublication, setProjectPublication] = useState<"all" | "published" | "drafts">("all");
+  const [leadSearch, setLeadSearch] = useState("");
+  const [leadReadFilter, setLeadReadFilter] = useState<"all" | "unread" | "read">("all");
   const [toast, setToast] = useState("");
   const [section, setSection] = useState<Section>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -71,11 +84,43 @@ export default function AdminDashboardPage() {
   });
 
   const unread = inboxQuery.data?.unread ?? statsQuery.data?.unread ?? 0;
-  const messages = inboxQuery.data?.items ?? [];
-  const projects = projectsQuery.data ?? [];
+  const messages = useMemo(() => inboxQuery.data?.items ?? [], [inboxQuery.data?.items]);
+  const projects = useMemo(() => projectsQuery.data ?? [], [projectsQuery.data]);
+  const filteredProjects = useMemo(() => {
+    const query = projectSearch.trim().toLowerCase();
+    return projects.filter((project) => {
+      const matchesQuery =
+        !query ||
+        [project.title, project.description, project.company, project.category, project.projectType]
+          .some((value) => value?.toLowerCase().includes(query));
+      const matchesPublication =
+        projectPublication === "all" ||
+        (projectPublication === "published" ? project.published : !project.published);
+      return matchesQuery && matchesPublication;
+    });
+  }, [projectPublication, projectSearch, projects]);
+  const filteredLeads = useMemo(() => {
+    const query = leadSearch.trim().toLowerCase();
+    return messages.filter((lead) => {
+      const matchesQuery =
+        !query ||
+        [lead.name, lead.email, lead.phone, lead.company, lead.service, lead.message]
+          .some((value) => value?.toLowerCase().includes(query));
+      const matchesRead =
+        leadReadFilter === "all" ||
+        (leadReadFilter === "read" ? lead.read : !lead.read);
+      return matchesQuery && matchesRead;
+    });
+  }, [leadReadFilter, leadSearch, messages]);
 
   const refresh = async () => {
-    await Promise.all([statsQuery.refetch(), projectsQuery.refetch(), inboxQuery.refetch()]);
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: trpc.auth.dashboard.queryKey() }),
+      queryClient.invalidateQueries({ queryKey: trpc.project.adminList.queryKey() }),
+      queryClient.invalidateQueries({ queryKey: trpc.project.getAll.queryKey() }),
+      queryClient.invalidateQueries({ queryKey: trpc.project.getById.queryKey() }),
+      queryClient.invalidateQueries({ queryKey: trpc.contact.inbox.queryKey() }),
+    ]);
   };
 
   useEffect(() => {
@@ -111,6 +156,17 @@ export default function AdminDashboardPage() {
   }, [toast]);
 
   useEffect(() => {
+    if (!status && !leadStatus) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setStatus("");
+      setLeadStatus("");
+    }, 5000);
+    return () => window.clearTimeout(timer);
+  }, [status, leadStatus]);
+
+  useEffect(() => {
     document.title = unread > 0 ? `(${unread}) Dashboard` : "Dashboard";
   }, [unread]);
 
@@ -123,11 +179,15 @@ export default function AdminDashboardPage() {
   const createProject = useMutation(
     trpc.project.create.mutationOptions({
       onSuccess: async () => {
-        setStatus("Project published to the live portfolio.");
+        setStatus("Project saved.");
+        setStatusIsError(false);
         setForm(emptyForm);
         await refresh();
       },
-      onError: (error) => setStatus(error.message),
+      onError: (error) => {
+        setStatus(error.message);
+        setStatusIsError(true);
+      },
     }),
   );
 
@@ -135,10 +195,14 @@ export default function AdminDashboardPage() {
     trpc.project.update.mutationOptions({
       onSuccess: async () => {
         setStatus("Project updated.");
+        setStatusIsError(false);
         setForm(emptyForm);
         await refresh();
       },
-      onError: (error) => setStatus(error.message),
+      onError: (error) => {
+        setStatus(error.message);
+        setStatusIsError(true);
+      },
     }),
   );
 
@@ -146,20 +210,64 @@ export default function AdminDashboardPage() {
     trpc.project.delete.mutationOptions({
       onSuccess: async () => {
         setStatus("Project removed.");
+        setStatusIsError(false);
         await refresh();
+      },
+      onError: (error) => {
+        setStatus(error.message);
+        setStatusIsError(true);
       },
     }),
   );
 
   const markRead = useMutation(
     trpc.contact.markRead.mutationOptions({
-      onSuccess: () => inboxQuery.refetch(),
+      onSuccess: async (message) => {
+        setLeadStatus(message.read ? "Lead marked as read." : "Lead marked as unread.");
+        setLeadStatusIsError(false);
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: trpc.contact.inbox.queryKey() }),
+          queryClient.invalidateQueries({ queryKey: trpc.auth.dashboard.queryKey() }),
+        ]);
+      },
+      onError: (error) => {
+        setLeadStatus(error.message);
+        setLeadStatusIsError(true);
+      },
     }),
   );
 
   const markAllRead = useMutation(
     trpc.contact.markAllRead.mutationOptions({
-      onSuccess: () => inboxQuery.refetch(),
+      onSuccess: async () => {
+        setLeadStatus("All leads marked as read.");
+        setLeadStatusIsError(false);
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: trpc.contact.inbox.queryKey() }),
+          queryClient.invalidateQueries({ queryKey: trpc.auth.dashboard.queryKey() }),
+        ]);
+      },
+      onError: (error) => {
+        setLeadStatus(error.message);
+        setLeadStatusIsError(true);
+      },
+    }),
+  );
+
+  const deleteLead = useMutation(
+    trpc.contact.delete.mutationOptions({
+      onSuccess: async () => {
+        setLeadStatus("Lead deleted.");
+        setLeadStatusIsError(false);
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: trpc.contact.inbox.queryKey() }),
+          queryClient.invalidateQueries({ queryKey: trpc.auth.dashboard.queryKey() }),
+        ]);
+      },
+      onError: (error) => {
+        setLeadStatus(error.message);
+        setLeadStatusIsError(true);
+      },
     }),
   );
 
@@ -171,6 +279,7 @@ export default function AdminDashboardPage() {
       image: form.image,
       github: form.github,
       demo: form.demo,
+      socialLinks: { linkedin: form.linkedin },
       isVideo: form.isVideo,
       technologies: form.technologies
         .split(",")
@@ -182,6 +291,7 @@ export default function AdminDashboardPage() {
         .filter(Boolean),
       details: form.details,
       role: form.role,
+      projectType: form.projectType,
       kind: form.kind,
       companySlug: form.kind === "partnership" ? form.companySlug : "",
       company: form.kind === "partnership" ? (venture?.name ?? form.company) : "",
@@ -194,6 +304,7 @@ export default function AdminDashboardPage() {
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
     setStatus("");
+    setStatusIsError(false);
     if (form.kind === "partnership" && !form.companySlug) {
       setStatus("Choose a partnership company for this project.");
       return;
@@ -206,15 +317,23 @@ export default function AdminDashboardPage() {
   };
 
   const uploadFile = async (file: File) => {
-    const data = new FormData();
-    data.append("file", file);
-    const response = await fetch("/api/upload", { method: "POST", body: data });
-    const json = (await response.json()) as { url?: string; error?: string };
-    if (!response.ok || !json.url) {
-      setStatus(json.error || "Upload failed.");
-      return;
+    try {
+      const data = new FormData();
+      data.append("file", file);
+      const response = await fetch("/api/upload", { method: "POST", body: data });
+      const json = (await response.json()) as { url?: string; error?: string };
+      if (!response.ok || !json.url) {
+        setStatus(json.error || "Upload failed.");
+        setStatusIsError(true);
+        return;
+      }
+      setForm((prev) => ({ ...prev, image: json.url as string, isVideo: file.type.startsWith("video/") }));
+      setStatus("Media uploaded.");
+      setStatusIsError(false);
+    } catch {
+      setStatus("Media upload failed. Check your connection and try again.");
+      setStatusIsError(true);
     }
-    setForm((prev) => ({ ...prev, image: json.url as string, isVideo: file.type.startsWith("video/") }));
   };
 
   const editProject = (project: (typeof projects)[number]) => {
@@ -225,11 +344,13 @@ export default function AdminDashboardPage() {
       image: project.image,
       github: project.github,
       demo: project.demo,
+      linkedin: project.socialLinks?.linkedin ?? "",
       isVideo: project.isVideo,
       technologies: project.technologies.join(", "),
       highlights: (project.highlights ?? []).join(", "),
       details: project.details ?? "",
       role: project.role ?? "",
+      projectType: project.projectType ?? "",
       kind: project.kind === "partnership" ? "partnership" : "personal",
       companySlug: project.companySlug ?? "",
       company: project.company ?? "",
@@ -237,6 +358,8 @@ export default function AdminDashboardPage() {
       published: project.published,
       order: project.order,
     });
+    setStatus("");
+    setStatusIsError(false);
     setSection("projects");
     setSidebarOpen(false);
   };
@@ -252,7 +375,7 @@ export default function AdminDashboardPage() {
     ["Unique visitors", statsQuery.data?.uniqueVisitors ?? 0],
     ["Total views", statsQuery.data?.totalViews ?? 0],
     ["Projects", statsQuery.data?.projects ?? 0],
-    ["Messages", inboxQuery.data?.items.length ?? statsQuery.data?.messages ?? 0],
+    ["Messages", inboxQuery.data?.total ?? statsQuery.data?.messages ?? messages.length],
     ["Unread leads", unread],
   ];
 
@@ -262,6 +385,18 @@ export default function AdminDashboardPage() {
         <div className="fixed right-4 top-4 z-50 max-w-sm rounded-2xl border border-sky-200 bg-white p-4 shadow-xl">
           <p className="text-xs uppercase tracking-[0.2em] text-sky-600">New lead</p>
           <p className="mt-1 text-sm text-slate-800">{toast}</p>
+        </div>
+      )}
+      {(status || leadStatus) && (
+        <div
+          role={(status ? statusIsError : leadStatusIsError) ? "alert" : "status"}
+          className={`fixed right-4 ${toast ? "top-24" : "top-4"} z-50 max-w-sm rounded-2xl border bg-white p-4 shadow-xl ${
+            (status ? statusIsError : leadStatusIsError)
+              ? "border-rose-200 text-rose-700"
+              : "border-emerald-200 text-emerald-700"
+          }`}
+        >
+          {status || leadStatus}
         </div>
       )}
 
@@ -318,12 +453,12 @@ export default function AdminDashboardPage() {
           })}
         </nav>
         <div className="space-y-2 border-t border-slate-200 p-4">
-          <a
+          <Link
             href="/"
             className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
           >
             <FaExternalLinkAlt /> View site
-          </a>
+          </Link>
           <button
             type="button"
             onClick={() => logout.mutate()}
@@ -470,6 +605,15 @@ export default function AdminDashboardPage() {
                     )}
                   </div>
                   <label className={labelClass}>
+                    Project subtype
+                    <input
+                      className={fieldClass}
+                      placeholder="e.g. Proprietary SaaS Solution"
+                      value={form.projectType}
+                      onChange={(event) => setForm((prev) => ({ ...prev, projectType: event.target.value }))}
+                    />
+                  </label>
+                  <label className={labelClass}>
                     Project title
                     <input className={fieldClass} placeholder="e.g. Wayfinder" value={form.title} onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))} required />
                   </label>
@@ -513,6 +657,25 @@ export default function AdminDashboardPage() {
                       <input className={fieldClass} placeholder="https://..." value={form.demo} onChange={(event) => setForm((prev) => ({ ...prev, demo: event.target.value }))} />
                     </label>
                   </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-700">Social Media</h3>
+                    <label className={`${labelClass} mt-3`}>
+                      LinkedIn URL
+                      <span className="relative mt-1.5 block">
+                        <FaLinkedin
+                          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sky-700"
+                          aria-hidden="true"
+                        />
+                        <input
+                          type="url"
+                          className={`${fieldClass} pl-11`}
+                          placeholder="https://www.linkedin.com/..."
+                          value={form.linkedin}
+                          onChange={(event) => setForm((prev) => ({ ...prev, linkedin: event.target.value }))}
+                        />
+                      </span>
+                    </label>
+                  </div>
                   <label className={labelClass}>
                     Technologies
                     <input className={fieldClass} placeholder="React, Node.js, MongoDB" value={form.technologies} onChange={(event) => setForm((prev) => ({ ...prev, technologies: event.target.value }))} />
@@ -550,7 +713,11 @@ export default function AdminDashboardPage() {
                   </label>
                 </div>
                 <div className="mt-5 flex flex-wrap gap-3">
-                  <button type="submit" className="rounded-xl bg-sky-500 px-5 py-3 font-semibold text-white">
+                  <button
+                    type="submit"
+                    disabled={createProject.isPending || updateProject.isPending}
+                    className="rounded-xl bg-sky-500 px-5 py-3 font-semibold text-white disabled:opacity-60"
+                  >
                     {form.id ? "Update project" : "Add project"}
                   </button>
                   {form.id && (
@@ -559,17 +726,44 @@ export default function AdminDashboardPage() {
                     </button>
                   )}
                 </div>
-                {status && <p className="mt-4 text-sm text-sky-700">{status}</p>}
               </form>
 
               <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
                 <h2 className="text-xl font-semibold">All projects</h2>
+                <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
+                  <label className="sr-only" htmlFor="project-search">Search projects</label>
+                  <input
+                    id="project-search"
+                    type="search"
+                    className={fieldClass}
+                    placeholder="Search title, description, company, or category"
+                    value={projectSearch}
+                    onChange={(event) => setProjectSearch(event.target.value)}
+                  />
+                  <label className="sr-only" htmlFor="project-publication">Filter projects by publication</label>
+                  <select
+                    id="project-publication"
+                    className={`${fieldClass} sm:min-w-40`}
+                    value={projectPublication}
+                    onChange={(event) => setProjectPublication(event.target.value as typeof projectPublication)}
+                  >
+                    <option value="all">All projects</option>
+                    <option value="published">Published</option>
+                    <option value="drafts">Drafts</option>
+                  </select>
+                </div>
+                {projectsQuery.isError && (
+                  <p role="alert" className="mt-3 text-sm text-red-600">
+                    Could not load projects: {projectsQuery.error.message}
+                  </p>
+                )}
                 <div className="mt-4 max-h-[820px] space-y-3 overflow-y-auto">
-                  {projects.map((project) => (
+                  {filteredProjects.map((project) => (
                     <div key={project.id} className="rounded-xl border border-slate-200 p-4">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                           <h3 className="font-semibold">{project.title}</h3>
+                          <p className="mt-1 line-clamp-2 text-sm text-slate-600">{project.description}</p>
                           <p className="text-xs text-slate-500">
                             {project.kind === "partnership" ? project.company || "Partnership" : "Self project"} · {project.category}
                           </p>
@@ -585,6 +779,9 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
                   ))}
+                  {!projectsQuery.isLoading && !projectsQuery.isError && !filteredProjects.length && (
+                    <p className="py-6 text-center text-sm text-slate-500">No projects match these filters.</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -597,7 +794,7 @@ export default function AdminDashboardPage() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h2 className="text-xl font-semibold">Contact leads</h2>
-                  <p className="text-sm text-slate-500">Messages from the public contact form.</p>
+                  <p className="text-sm text-slate-500">Project inquiries and messages from the public contact form.</p>
                 </div>
                 <button
                   type="button"
@@ -608,8 +805,35 @@ export default function AdminDashboardPage() {
                   Mark all read
                 </button>
               </div>
+              {inboxQuery.isError && (
+                <p role="alert" className="mt-3 text-sm text-red-600">
+                  Could not load leads: {inboxQuery.error.message}
+                </p>
+              )}
+              <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
+                <label className="sr-only" htmlFor="lead-search">Search leads</label>
+                <input
+                  id="lead-search"
+                  type="search"
+                  className={fieldClass}
+                  placeholder="Search name, email, company, service, or inquiry"
+                  value={leadSearch}
+                  onChange={(event) => setLeadSearch(event.target.value)}
+                />
+                <label className="sr-only" htmlFor="lead-read-filter">Filter leads by read status</label>
+                <select
+                  id="lead-read-filter"
+                  className={`${fieldClass} sm:min-w-40`}
+                  value={leadReadFilter}
+                  onChange={(event) => setLeadReadFilter(event.target.value as typeof leadReadFilter)}
+                >
+                  <option value="all">All leads</option>
+                  <option value="unread">Unread</option>
+                  <option value="read">Read</option>
+                </select>
+              </div>
               <div className="mt-4 grid gap-3">
-                {messages.map((message) => (
+                {filteredLeads.map((message) => (
                   <div
                     key={message.id}
                     className={`rounded-xl p-4 ${message.read ? "border border-slate-200 bg-white" : "border border-sky-200 bg-sky-50"}`}
@@ -617,9 +841,11 @@ export default function AdminDashboardPage() {
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <p className="font-medium">{message.name}</p>
+                        {message.service && <p className="mt-1 text-xs font-medium text-sky-700">{message.service}</p>}
                         <a href={`mailto:${message.email}`} className="text-xs text-sky-600">
                           {message.email}
                         </a>
+                        {message.company && <p className="mt-1 text-xs text-slate-500">{message.company}</p>}
                       </div>
                       <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
                         {message.createdAt && <span>{new Date(message.createdAt).toLocaleString()}</span>}
@@ -632,12 +858,42 @@ export default function AdminDashboardPage() {
                             Mark read
                           </button>
                         )}
+                        {message.read && (
+                          <button
+                            type="button"
+                            className="rounded-full border border-slate-200 px-3 py-1 font-semibold text-slate-600"
+                            onClick={() => markRead.mutate({ id: message.id, read: false })}
+                          >
+                            Mark unread
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1 rounded-full border border-rose-200 px-3 py-1 font-semibold text-rose-600"
+                          onClick={() => {
+                            if (window.confirm(`Delete the lead from ${message.name}? This cannot be undone.`)) {
+                              deleteLead.mutate({ id: message.id });
+                            }
+                          }}
+                        >
+                          <FaTrashAlt aria-hidden="true" /> Delete
+                        </button>
                       </div>
                     </div>
-                    <p className="mt-2 text-sm text-slate-700">{message.message}</p>
+                    <p className="mt-2 line-clamp-3 text-sm text-slate-700">{message.message}</p>
+                    <Link
+                      href={`/admin/leads/${message.id}`}
+                      className="mt-3 inline-flex items-center rounded-full border border-sky-200 px-3 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-50"
+                    >
+                      View full inquiry
+                    </Link>
                   </div>
                 ))}
-                {!messages.length && <p className="text-sm text-slate-500">No messages yet.</p>}
+                {!filteredLeads.length && !inboxQuery.isError && (
+                  <p className="text-sm text-slate-500">
+                    {messages.length ? "No leads match these filters." : "No leads yet."}
+                  </p>
+                )}
               </div>
             </div>
           )}

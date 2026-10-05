@@ -1,5 +1,12 @@
 import { Schema, model, models, type InferSchemaType } from "mongoose";
 
+const socialLinksSchema = new Schema(
+  {
+    linkedin: { type: String, trim: true },
+  },
+  { _id: false },
+);
+
 const projectSchema = new Schema(
   {
     title: { type: String, required: true, trim: true },
@@ -7,6 +14,7 @@ const projectSchema = new Schema(
     image: { type: String, required: true, trim: true },
     github: { type: String, default: "", trim: true },
     demo: { type: String, default: "", trim: true },
+    socialLinks: { type: socialLinksSchema, default: undefined },
     isVideo: { type: Boolean, default: false },
     technologies: { type: [String], default: [] },
     company: { type: String, default: "", trim: true },

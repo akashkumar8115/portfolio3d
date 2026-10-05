@@ -55,7 +55,7 @@ export default function Contact() {
             className="inline-flex items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-5 py-3"
           >
             <img src="/images/email.png" alt="" className="h-6 w-6" />
-            20dec024@gmail.com
+            akash2884182@gmail.com
           </a>
           <a
             href="https://www.linkedin.com/in/akash-kumar-54073a209/"

@@ -67,7 +67,7 @@ export const blogRouter = createTRPCRouter({
   update: adminProcedure.input(blogInput.extend({ id: z.string().min(1) })).mutation(async ({ input }) => {
     await connectDB();
     const { id, ...data } = input;
-    const updated = await BlogModel.findByIdAndUpdate(id, data, { new: true });
+    const updated = await BlogModel.findByIdAndUpdate(id, data, { new: true, runValidators: true });
     if (!updated) {
       throw new TRPCError({ code: "NOT_FOUND", message: "Blog not found." });
     }

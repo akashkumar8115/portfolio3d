@@ -6,12 +6,31 @@ import { ProjectModel } from "@/server/models/Project";
 import { seedProjectsIfEmpty } from "@/server/seed";
 import { projectCategories } from "@/server/data/projects";
 
+const linkedinUrl = z
+  .string()
+  .trim()
+  .url()
+  .refine((value) => {
+    const url = new URL(value);
+    return url.protocol === "https:" && (url.hostname === "linkedin.com" || url.hostname.endsWith(".linkedin.com"));
+  }, "Enter a valid HTTPS LinkedIn URL.");
+
+const socialLinksInput = z
+  .object({
+    linkedin: z.union([z.literal(""), linkedinUrl]).optional(),
+  })
+  .optional()
+  .transform((links) =>
+    links ? (links.linkedin ? { linkedin: links.linkedin } : {}) : undefined,
+  );
+
 const projectInput = z.object({
   title: z.string().min(2),
   description: z.string().min(8),
   image: z.string().min(1),
   github: z.string().optional().default(""),
   demo: z.string().optional().default(""),
+  socialLinks: socialLinksInput,
   isVideo: z.boolean().optional().default(false),
   technologies: z.array(z.string()).optional().default([]),
   company: z.string().optional().default(""),
@@ -33,6 +52,7 @@ function serializeProject(project: {
   image: string;
   github?: string;
   demo?: string;
+  socialLinks?: { linkedin?: string | null } | null;
   isVideo?: boolean;
   technologies?: string[];
   company?: string;
@@ -55,6 +75,7 @@ function serializeProject(project: {
     image: project.image,
     github: project.github ?? "",
     demo: project.demo ?? "",
+    socialLinks: project.socialLinks?.linkedin ? { linkedin: project.socialLinks.linkedin } : undefined,
     isVideo: Boolean(project.isVideo),
     technologies: project.technologies ?? [],
     company: project.company ?? "",
@@ -118,7 +139,7 @@ export const projectRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       await connectDB();
       const { id, ...data } = input;
-      const updated = await ProjectModel.findByIdAndUpdate(id, data, { new: true });
+      const updated = await ProjectModel.findByIdAndUpdate(id, data, { new: true, runValidators: true });
       if (!updated) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Project not found." });
       }

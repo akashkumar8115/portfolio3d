@@ -1,7 +1,7 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/lib/trpc";
 
 const emptyBlog = {
@@ -13,6 +13,7 @@ const emptyBlog = {
   published: true,
   order: 0,
 };
+type BlogFilter = "all" | "published" | "drafts";
 
 type BlogForm = typeof emptyBlog & { id?: string };
 
@@ -22,9 +23,42 @@ const labelClass = "block text-sm font-semibold text-slate-700";
 
 export default function BlogPanel() {
   const trpc = useTRPC();
+  const queryClient = useQueryClient();
   const [form, setForm] = useState<BlogForm>(emptyBlog);
   const [status, setStatus] = useState("");
+  const [statusIsError, setStatusIsError] = useState(false);
+  const [search, setSearch] = useState("");
+  const [publication, setPublication] = useState<BlogFilter>("all");
   const blogsQuery = useQuery(trpc.blog.adminList.queryOptions());
+
+  useEffect(() => {
+    if (!status) {
+      return;
+    }
+    const timer = window.setTimeout(() => setStatus(""), 5000);
+    return () => window.clearTimeout(timer);
+  }, [status]);
+  const filteredBlogs = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return (blogsQuery.data ?? []).filter((blog) => {
+      const matchesText =
+        !query ||
+        [blog.title, blog.excerpt, blog.content, ...blog.tags].some((value) =>
+          value.toLowerCase().includes(query),
+        );
+      const matchesPublication =
+        publication === "all" || (publication === "published" ? blog.published : !blog.published);
+      return matchesText && matchesPublication;
+    });
+  }, [blogsQuery.data, publication, search]);
+
+  const refreshBlogs = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: trpc.blog.adminList.queryKey() }),
+      queryClient.invalidateQueries({ queryKey: trpc.blog.getAll.queryKey() }),
+      queryClient.invalidateQueries({ queryKey: trpc.blog.getById.queryKey() }),
+    ]);
+  };
 
   const payload = useMemo(
     () => ({
@@ -45,11 +79,15 @@ export default function BlogPanel() {
   const createBlog = useMutation(
     trpc.blog.create.mutationOptions({
       onSuccess: async () => {
-        setStatus("Blog published.");
+        setStatus("Blog saved.");
+        setStatusIsError(false);
         setForm(emptyBlog);
-        await blogsQuery.refetch();
+        await refreshBlogs();
       },
-      onError: (error) => setStatus(error.message),
+      onError: (error) => {
+        setStatus(error.message);
+        setStatusIsError(true);
+      },
     }),
   );
 
@@ -57,34 +95,55 @@ export default function BlogPanel() {
     trpc.blog.update.mutationOptions({
       onSuccess: async () => {
         setStatus("Blog updated.");
+        setStatusIsError(false);
         setForm(emptyBlog);
-        await blogsQuery.refetch();
+        await refreshBlogs();
       },
-      onError: (error) => setStatus(error.message),
+      onError: (error) => {
+        setStatus(error.message);
+        setStatusIsError(true);
+      },
     }),
   );
 
   const deleteBlog = useMutation(
     trpc.blog.delete.mutationOptions({
-      onSuccess: () => blogsQuery.refetch(),
+      onSuccess: async () => {
+        setStatus("Blog deleted.");
+        setStatusIsError(false);
+        await refreshBlogs();
+      },
+      onError: (error) => {
+        setStatus(error.message);
+        setStatusIsError(true);
+      },
     }),
   );
 
   const uploadFile = async (file: File) => {
-    const data = new FormData();
-    data.append("file", file);
-    const response = await fetch("/api/upload", { method: "POST", body: data });
-    const json = (await response.json()) as { url?: string; error?: string };
-    if (!response.ok || !json.url) {
-      setStatus(json.error || "Upload failed.");
-      return;
+    try {
+      const data = new FormData();
+      data.append("file", file);
+      const response = await fetch("/api/upload", { method: "POST", body: data });
+      const json = (await response.json()) as { url?: string; error?: string };
+      if (!response.ok || !json.url) {
+        setStatus(json.error || "Upload failed.");
+        setStatusIsError(true);
+        return;
+      }
+      setForm((prev) => ({ ...prev, image: json.url as string }));
+      setStatus("Cover image uploaded.");
+      setStatusIsError(false);
+    } catch {
+      setStatus("Cover image upload failed. Check your connection and try again.");
+      setStatusIsError(true);
     }
-    setForm((prev) => ({ ...prev, image: json.url as string }));
   };
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
     setStatus("");
+    setStatusIsError(false);
     if (form.id) {
       updateBlog.mutate({ id: form.id, ...payload });
       return;
@@ -94,6 +153,16 @@ export default function BlogPanel() {
 
   return (
     <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+      {status && (
+        <p
+          role={statusIsError ? "alert" : "status"}
+          className={`fixed right-4 top-4 z-50 max-w-sm rounded-2xl border bg-white p-4 shadow-xl ${
+            statusIsError ? "border-rose-200 text-rose-700" : "border-emerald-200 text-emerald-700"
+          }`}
+        >
+          {status}
+        </p>
+      )}
       <form onSubmit={onSubmit} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <h2 className="text-xl font-semibold">{form.id ? "Edit blog" : "Add blog"}</h2>
         <p className="mt-1 text-sm text-slate-500">Published blogs appear in the home slider and /blogs.</p>
@@ -142,7 +211,11 @@ export default function BlogPanel() {
           </label>
         </div>
         <div className="mt-5 flex gap-3">
-          <button type="submit" className="rounded-xl bg-sky-500 px-5 py-3 font-semibold text-white">
+          <button
+            type="submit"
+            disabled={createBlog.isPending || updateBlog.isPending}
+            className="rounded-xl bg-sky-500 px-5 py-3 font-semibold text-white disabled:opacity-60"
+          >
             {form.id ? "Update blog" : "Add blog"}
           </button>
           {form.id && (
@@ -151,14 +224,41 @@ export default function BlogPanel() {
             </button>
           )}
         </div>
-        {status && <p className="mt-4 text-sm text-sky-700">{status}</p>}
       </form>
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <h2 className="text-xl font-semibold">All blogs</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
+          <label className="sr-only" htmlFor="blog-search">Search blogs</label>
+          <input
+            id="blog-search"
+            type="search"
+            className={fieldClass}
+            placeholder="Search title, excerpt, content, or tags"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
+          <label className="sr-only" htmlFor="blog-publication">Filter blogs by publication</label>
+          <select
+            id="blog-publication"
+            className={`${fieldClass} sm:min-w-40`}
+            value={publication}
+            onChange={(event) => setPublication(event.target.value as BlogFilter)}
+          >
+            <option value="all">All blogs</option>
+            <option value="published">Published</option>
+            <option value="drafts">Drafts</option>
+          </select>
+        </div>
+        {blogsQuery.isError && (
+          <p role="alert" className="mt-3 text-sm text-red-600">
+            Could not load blogs: {blogsQuery.error.message}
+          </p>
+        )}
         <div className="mt-4 space-y-3">
-          {(blogsQuery.data ?? []).map((blog) => (
+          {filteredBlogs.map((blog) => (
             <div key={blog.id} className="rounded-xl border border-slate-200 p-4">
               <h3 className="font-semibold">{blog.title}</h3>
+              <p className="mt-1 line-clamp-2 text-sm text-slate-600">{blog.excerpt}</p>
               <p className="text-xs text-slate-500">{blog.published ? "Published" : "Draft"}</p>
               <div className="mt-2 flex gap-3">
                 <button
@@ -185,7 +285,11 @@ export default function BlogPanel() {
               </div>
             </div>
           ))}
-          {!blogsQuery.data?.length && <p className="text-sm text-slate-500">No blogs yet.</p>}
+          {!blogsQuery.isLoading && !blogsQuery.isError && !filteredBlogs.length && (
+            <p className="text-sm text-slate-500">
+              {blogsQuery.data?.length ? "No blogs match these filters." : "No blogs yet."}
+            </p>
+          )}
         </div>
       </div>
     </div>

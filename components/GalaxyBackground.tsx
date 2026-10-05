@@ -2,21 +2,32 @@
 
 import { useMemo } from "react";
 
-function randomStars(count: number, size: number) {
+function createRandomGenerator(seed: number) {
+  let state = seed;
+
+  return () => {
+    state = (1664525 * state + 1013904223) % 4294967296;
+    return state / 4294967296;
+  };
+}
+
+function randomStars(count: number, size: number, seed: number) {
+  const random = createRandomGenerator(seed);
+
   return Array.from({ length: count }, (_, index) => ({
     id: `${size}-${index}`,
-    left: Math.random() * 100,
-    top: Math.random() * 100,
-    delay: Math.random() * 5,
-    duration: 2.4 + Math.random() * 3.2,
-    opacity: 0.4 + Math.random() * 0.6,
+    left: random() * 100,
+    top: random() * 100,
+    delay: random() * 5,
+    duration: 2.4 + random() * 3.2,
+    opacity: 0.4 + random() * 0.6,
   }));
 }
 
 export default function GalaxyBackground() {
-  const near = useMemo(() => randomStars(70, 2), []);
-  const mid = useMemo(() => randomStars(140, 1), []);
-  const far = useMemo(() => randomStars(220, 0), []);
+  const near = useMemo(() => randomStars(70, 2, 3201), []);
+  const mid = useMemo(() => randomStars(140, 1, 3202), []);
+  const far = useMemo(() => randomStars(220, 0, 3203), []);
 
   return (
     <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">

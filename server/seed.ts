@@ -5,6 +5,10 @@ import { projectsData } from "@/server/data/projects";
 export async function seedProjectsIfEmpty() {
   await connectDB();
 
+  if (await ProjectModel.exists({})) {
+    return;
+  }
+
   for (const [index, project] of projectsData.entries()) {
     await ProjectModel.findOneAndUpdate(
       { title: project.title },

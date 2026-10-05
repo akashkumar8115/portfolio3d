@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { FaExternalLinkAlt, FaGithub } from "react-icons/fa";
+import { FaExternalLinkAlt, FaGithub, FaLinkedin } from "react-icons/fa";
 import { useTRPC } from "@/lib/trpc";
 import PublicShell from "@/components/PublicShell";
 
@@ -81,7 +81,7 @@ export default function ProjectDetailPage() {
                 {project.demo && (
                   <p>
                     <span className="font-semibold text-slate-800">Live URL: </span>
-                    <a href={project.demo} target="_blank" rel="noreferrer" className="break-all text-sky-700">
+                    <a href={project.demo} target="_blank" rel="noopener noreferrer" className="break-all text-sky-700">
                       {project.demo}
                     </a>
                   </p>
@@ -89,7 +89,7 @@ export default function ProjectDetailPage() {
                 {project.github && (
                   <p>
                     <span className="font-semibold text-slate-800">Code URL: </span>
-                    <a href={project.github} target="_blank" rel="noreferrer" className="break-all text-sky-700">
+                    <a href={project.github} target="_blank" rel="noopener noreferrer" className="break-all text-sky-700">
                       {project.github}
                     </a>
                   </p>
@@ -101,7 +101,7 @@ export default function ProjectDetailPage() {
                   <a
                     href={project.github}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white"
                   >
                     <FaGithub /> Open code
@@ -111,10 +111,20 @@ export default function ProjectDetailPage() {
                   <a
                     href={project.demo}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-full bg-sky-500 px-5 py-3 text-sm font-semibold text-white"
                   >
                     <FaExternalLinkAlt /> Visit live
+                  </a>
+                )}
+                {project.socialLinks?.linkedin && (
+                  <a
+                    href={project.socialLinks.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full bg-[#0A66C2] px-5 py-3 text-sm font-semibold text-white"
+                  >
+                    <FaLinkedin /> LinkedIn
                   </a>
                 )}
                 {project.companySlug && (

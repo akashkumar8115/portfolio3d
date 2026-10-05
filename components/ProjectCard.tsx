@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { MouseEvent } from "react";
 import { motion } from "framer-motion";
-import { FaExternalLinkAlt, FaGithub } from "react-icons/fa";
+import { FaExternalLinkAlt, FaGithub, FaLinkedin } from "react-icons/fa";
 
 export type ProjectCardData = {
   id: string;
@@ -12,6 +12,7 @@ export type ProjectCardData = {
   image: string;
   github: string;
   demo: string;
+  socialLinks?: { linkedin?: string };
   isVideo: boolean;
   technologies: string[];
   company?: string;
@@ -28,10 +29,12 @@ export default function ProjectCard({
   project: ProjectCardData;
   compact?: boolean;
 }) {
+  const linkedin = project.socialLinks?.linkedin;
+
   const openLink = (event: MouseEvent, url: string) => {
     event.preventDefault();
     event.stopPropagation();
-    window.open(url, "_blank");
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -110,6 +113,15 @@ export default function ProjectCard({
                 onClick={(event) => openLink(event, project.demo)}
               >
                 <FaExternalLinkAlt /> Live
+              </button>
+            )}
+            {linkedin && (
+              <button
+                type="button"
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#004182]"
+                onClick={(event) => openLink(event, linkedin)}
+              >
+                <FaLinkedin /> LinkedIn
               </button>
             )}
             <span className="inline-flex flex-1 items-center justify-center rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700">
