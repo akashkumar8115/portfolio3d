@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { getGoogleDriveImageSource } from "@/lib/projectMedia";
 
 export type BlogCardData = {
   id: string;
@@ -24,7 +25,12 @@ export default function BlogCard({ blog, compact = false }: { blog: BlogCardData
       >
         <div className={`overflow-hidden bg-slate-100 ${compact ? "h-40" : "h-48"}`}>
           {blog.image ? (
-            <img src={blog.image} alt={blog.title} className="h-full w-full object-cover" loading="lazy" />
+            <img
+              src={getGoogleDriveImageSource(blog.image)}
+              alt={blog.title}
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
           ) : (
             <div className="flex h-full items-center justify-center bg-gradient-to-br from-sky-100 to-slate-100 text-sm font-semibold text-sky-700">
               Blog

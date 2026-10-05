@@ -631,7 +631,24 @@ export default function AdminDashboardPage() {
                   </label>
                   <label className={labelClass}>
                     Image or video URL
-                    <input className={fieldClass} placeholder="https:// or /uploads/..." value={form.image} onChange={(event) => setForm((prev) => ({ ...prev, image: event.target.value }))} required />
+                    <input
+                      className={fieldClass}
+                      placeholder="Paste a direct URL or Google Drive share link"
+                      value={form.image}
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          image: event.target.value,
+                          ...( /\.(mp4|webm|ogg|mov)(?:$|[?#])/i.test(event.target.value)
+                            ? { isVideo: true }
+                            : {} ),
+                        }))
+                      }
+                      required
+                    />
+                    <span className="mt-1 block text-xs font-normal text-slate-500">
+                      Drive link: set access to “Anyone with the link”. For Drive videos, enable Video media below.
+                    </span>
                   </label>
                   <label className={labelClass}>
                     Upload media

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { MouseEvent } from "react";
 import { motion } from "framer-motion";
 import { FaExternalLinkAlt, FaGithub, FaLinkedin } from "react-icons/fa";
+import ProjectMedia from "@/components/ProjectMedia";
 
 export type ProjectCardData = {
   id: string;
@@ -49,23 +50,13 @@ export default function ProjectCard({
         className="group h-full overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_12px_40px_rgba(15,23,42,0.08)]"
       >
         <div className={`relative overflow-hidden bg-slate-100 ${compact ? "h-44" : "h-52"}`}>
-          {project.isVideo ? (
-            <video
-              src={project.image}
-              muted
-              loop
-              playsInline
-              autoPlay
-              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-            />
-          ) : (
-            <img
-              src={project.image}
-              alt={project.title}
-              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-              loading="lazy"
-            />
-          )}
+          <ProjectMedia
+            src={project.image}
+            title={project.title}
+            isVideo={project.isVideo}
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            imageClassName="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+          />
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/45 to-transparent" />
           {project.company && (
             <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-sky-700">

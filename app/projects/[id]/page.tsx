@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { FaExternalLinkAlt, FaGithub, FaLinkedin } from "react-icons/fa";
 import { useTRPC } from "@/lib/trpc";
 import PublicShell from "@/components/PublicShell";
+import ProjectMedia from "@/components/ProjectMedia";
 
 export default function ProjectDetailPage() {
   const params = useParams<{ id: string }>();
@@ -36,11 +37,13 @@ export default function ProjectDetailPage() {
               {project.projectType && <p className="mt-1 text-sm text-slate-500">{project.projectType}</p>}
 
               <div className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-slate-100">
-                {project.isVideo ? (
-                  <video src={project.image} controls className="w-full" />
-                ) : (
-                  <img src={project.image} alt={project.title} className="w-full object-cover" />
-                )}
+                <ProjectMedia
+                  src={project.image}
+                  title={project.title}
+                  isVideo={project.isVideo}
+                  className="aspect-video w-full"
+                  imageClassName="w-full object-cover"
+                />
               </div>
 
               <p className="mt-8 text-lg leading-8 text-slate-700">{project.description}</p>

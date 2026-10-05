@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/lib/trpc";
 import PublicShell from "@/components/PublicShell";
+import { getGoogleDriveImageSource } from "@/lib/projectMedia";
 
 export default function BlogDetailPage() {
   const params = useParams<{ id: string }>();
@@ -29,7 +30,11 @@ export default function BlogDetailPage() {
                 <p className="mt-2 text-sm text-slate-500">{new Date(blog.createdAt).toLocaleDateString()}</p>
               )}
               {blog.image && (
-                <img src={blog.image} alt={blog.title} className="mt-8 w-full rounded-3xl object-cover" />
+                <img
+                  src={getGoogleDriveImageSource(blog.image)}
+                  alt={blog.title}
+                  className="mt-8 w-full rounded-3xl object-cover"
+                />
               )}
               <p className="mt-8 text-lg leading-8 text-slate-700">{blog.excerpt}</p>
               <div className="mt-6 whitespace-pre-wrap text-base leading-8 text-slate-700">{blog.content}</div>

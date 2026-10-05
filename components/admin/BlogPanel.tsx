@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/lib/trpc";
+import { getGoogleDriveImageSource } from "@/lib/projectMedia";
 
 const emptyBlog = {
   title: "",
@@ -181,8 +182,30 @@ export default function BlogPanel() {
           </label>
           <label className={labelClass}>
             Cover image URL
-            <input className={fieldClass} value={form.image} onChange={(event) => setForm((prev) => ({ ...prev, image: event.target.value }))} />
+            <input
+              className={fieldClass}
+              placeholder="Paste an image URL or Google Drive share link"
+              value={form.image}
+              onChange={(event) => setForm((prev) => ({ ...prev, image: event.target.value }))}
+            />
+            <span className="mt-1 block text-xs font-normal text-slate-500">
+              For Drive, set access to “Anyone with the link”.
+            </span>
           </label>
+          {form.image.trim() && (
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+              <p className="px-3 py-2 text-xs font-semibold text-slate-500">Cover preview</p>
+              <img
+                src={getGoogleDriveImageSource(form.image.trim())}
+                alt={`${form.title || "Blog"} cover preview`}
+                className="max-h-64 w-full object-cover"
+                onError={() => {
+                  setStatus("Cover preview failed. Check the URL and Drive sharing access.");
+                  setStatusIsError(true);
+                }}
+              />
+            </div>
+          )}
           <label className={labelClass}>
             Upload cover
             <input
