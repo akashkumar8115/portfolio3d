@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTRPC } from "@/lib/trpc";
+import { loginSchema } from "@/lib/validation/auth";
 
 export default function AdminLoginPage() {
   const trpc = useTRPC();
@@ -11,6 +12,7 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const login = useMutation(
     trpc.auth.login.mutationOptions({
@@ -22,13 +24,24 @@ export default function AdminLoginPage() {
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
     setError("");
-    login.mutate({ email, password });
+    const parsed = loginSchema.safeParse({ email, password });
+    if (!parsed.success) {
+      setFieldErrors(
+        Object.fromEntries(
+          Object.entries(parsed.error.flatten().fieldErrors).map(([field, messages]) => [field, messages?.[0] ?? "Please check this field."]),
+        ),
+      );
+      return;
+    }
+    setFieldErrors({});
+    login.mutate(parsed.data);
   };
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
       <form
         onSubmit={onSubmit}
+        noValidate
         className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-xl"
       >
         <p className="text-sm uppercase tracking-[0.25em] text-sky-600">Private</p>
@@ -41,9 +54,14 @@ export default function AdminLoginPage() {
             autoComplete="username"
             className="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none focus:border-sky-400"
             value={email}
-            onChange={(event) => setEmail(event.target.value)}
+            aria-invalid={Boolean(fieldErrors.email)}
+            onChange={(event) => {
+              setFieldErrors((errors) => ({ ...errors, email: "" }));
+              setEmail(event.target.value);
+            }}
             required
           />
+          {fieldErrors.email && <span role="alert" className="mt-1 block text-xs text-rose-600">{fieldErrors.email}</span>}
         </label>
         <label className="mt-4 block text-sm font-medium text-slate-700">
           Password
@@ -52,9 +70,14 @@ export default function AdminLoginPage() {
             autoComplete="current-password"
             className="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none focus:border-sky-400"
             value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            aria-invalid={Boolean(fieldErrors.password)}
+            onChange={(event) => {
+              setFieldErrors((errors) => ({ ...errors, password: "" }));
+              setPassword(event.target.value);
+            }}
             required
           />
+          {fieldErrors.password && <span role="alert" className="mt-1 block text-xs text-rose-600">{fieldErrors.password}</span>}
         </label>
         {error && <p className="mt-3 text-sm text-red-500">{error}</p>}
         <button

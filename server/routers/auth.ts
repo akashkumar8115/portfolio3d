@@ -1,5 +1,4 @@
 import { TRPCError } from "@trpc/server";
-import { z } from "zod";
 import { adminProcedure, createTRPCRouter, publicProcedure } from "@/server/trpc";
 import {
   clearSessionCookie,
@@ -11,17 +10,11 @@ import { connectDB } from "@/server/db";
 import { MessageModel } from "@/server/models/Message";
 import { ProjectModel } from "@/server/models/Project";
 import { VisitStatsModel } from "@/server/models/Visit";
+import { loginSchema } from "@/lib/validation/auth";
 
 export const authRouter = createTRPCRouter({
   me: publicProcedure.query(({ ctx }) => ctx.user),
-  login: publicProcedure
-    .input(
-      z.object({
-        email: z.string().email(),
-        password: z.string().min(1),
-      }),
-    )
-    .mutation(async ({ input }) => {
+  login: publicProcedure.input(loginSchema).mutation(async ({ input }) => {
       let admin: ReturnType<typeof getAdminCredentials>;
       try {
         admin = getAdminCredentials();

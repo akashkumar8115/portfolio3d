@@ -1,9 +1,8 @@
 import { TRPCError } from "@trpc/server";
-import { z } from "zod";
 import { adminProcedure, createTRPCRouter, publicProcedure } from "@/server/trpc";
 import { connectDB } from "@/server/db";
 import { MessageModel } from "@/server/models/Message";
-import { inquirySchema } from "@/lib/leadValidation";
+import { inquirySchema, leadIdSchema, leadReadSchema } from "@/lib/leadValidation";
 
 function serializeMessage(item: {
   _id: { toString(): string };
@@ -70,7 +69,7 @@ export const contactRouter = createTRPCRouter({
       items: items.map(serializeMessage),
     };
   }),
-  getById: adminProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {
+  getById: adminProcedure.input(leadIdSchema).query(async ({ input }) => {
     await connectDB();
     const item = await MessageModel.findById(input.id).lean();
     if (!item) {
@@ -79,7 +78,7 @@ export const contactRouter = createTRPCRouter({
     return serializeMessage(item);
   }),
   markRead: adminProcedure
-    .input(z.object({ id: z.string().min(1), read: z.boolean().optional().default(true) }))
+    .input(leadReadSchema)
     .mutation(async ({ input }) => {
       await connectDB();
       const updated = await MessageModel.findByIdAndUpdate(
@@ -92,7 +91,7 @@ export const contactRouter = createTRPCRouter({
       }
       return serializeMessage(updated);
     }),
-  delete: adminProcedure.input(z.object({ id: z.string().min(1) })).mutation(async ({ input }) => {
+  delete: adminProcedure.input(leadIdSchema).mutation(async ({ input }) => {
     await connectDB();
     const deleted = await MessageModel.findByIdAndDelete(input.id);
     if (!deleted) {

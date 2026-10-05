@@ -78,7 +78,7 @@ export function getAdminCredentials() {
     throw new Error("ADMIN_EMAIL and ADMIN_PASSWORD must be configured before admin login.");
   }
   return {
-    email,
+    email: email.trim().toLowerCase(),
     password,
   };
 }

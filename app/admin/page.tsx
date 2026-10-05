@@ -19,6 +19,7 @@ import {
 } from "react-icons/fa";
 import { useTRPC } from "@/lib/trpc";
 import { ventures } from "@/server/data/projects";
+import { projectCreateSchema } from "@/lib/validation/project";
 import BlogPanel from "@/components/admin/BlogPanel";
 
 const emptyForm = {
@@ -42,7 +43,7 @@ const emptyForm = {
   order: 0,
 };
 
-type FormState = typeof emptyForm & { id?: string };
+type FormState = Omit<typeof emptyForm, "order"> & { order: number | ""; id?: string };
 type Section = "overview" | "projects" | "blogs" | "leads";
 
 const fieldClass =
@@ -63,6 +64,7 @@ export default function AdminDashboardPage() {
   const queryClient = useQueryClient();
   const router = useRouter();
   const [form, setForm] = useState<FormState>(emptyForm);
+  const [projectErrors, setProjectErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState("");
   const [statusIsError, setStatusIsError] = useState(false);
   const [leadStatus, setLeadStatus] = useState("");
@@ -182,6 +184,7 @@ export default function AdminDashboardPage() {
         setStatus("Project saved.");
         setStatusIsError(false);
         setForm(emptyForm);
+        setProjectErrors({});
         await refresh();
       },
       onError: (error) => {
@@ -197,6 +200,7 @@ export default function AdminDashboardPage() {
         setStatus("Project updated.");
         setStatusIsError(false);
         setForm(emptyForm);
+        setProjectErrors({});
         await refresh();
       },
       onError: (error) => {
@@ -297,7 +301,7 @@ export default function AdminDashboardPage() {
       company: form.kind === "partnership" ? (venture?.name ?? form.company) : "",
       category: form.category,
       published: form.published,
-      order: Number(form.order) || 0,
+      order: form.order,
     };
   }, [form]);
 
@@ -305,15 +309,23 @@ export default function AdminDashboardPage() {
     event.preventDefault();
     setStatus("");
     setStatusIsError(false);
-    if (form.kind === "partnership" && !form.companySlug) {
-      setStatus("Choose a partnership company for this project.");
+    const parsed = projectCreateSchema.safeParse(payload);
+    if (!parsed.success) {
+      setProjectErrors(
+        Object.fromEntries(
+          Object.entries(parsed.error.flatten().fieldErrors).map(([field, messages]) => [field, messages?.[0] ?? "Please check this field."]),
+        ),
+      );
+      setStatus("Please review the highlighted project fields.");
+      setStatusIsError(true);
       return;
     }
+    setProjectErrors({});
     if (form.id) {
-      updateProject.mutate({ id: form.id, ...payload });
+      updateProject.mutate({ id: form.id, ...parsed.data });
       return;
     }
-    createProject.mutate(payload);
+    createProject.mutate(parsed.data);
   };
 
   const uploadFile = async (file: File) => {
@@ -337,6 +349,7 @@ export default function AdminDashboardPage() {
   };
 
   const editProject = (project: (typeof projects)[number]) => {
+    setProjectErrors({});
     setForm({
       id: project.id,
       title: project.title,
@@ -558,7 +571,7 @@ export default function AdminDashboardPage() {
 
           {section === "projects" && (
             <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-              <form onSubmit={onSubmit} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+              <form onSubmit={onSubmit} noValidate className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
                 <div className="flex items-center gap-2">
                   <FaPlus className="text-sky-600" />
                   <h2 className="text-xl font-semibold">{form.id ? "Edit project" : "Add project"}</h2>
@@ -590,8 +603,12 @@ export default function AdminDashboardPage() {
                         Partnership company
                         <select
                           className={fieldClass}
+                          aria-invalid={Boolean(projectErrors.companySlug)}
                           value={form.companySlug}
-                          onChange={(event) => setForm((prev) => ({ ...prev, companySlug: event.target.value }))}
+                          onChange={(event) => {
+                            setProjectErrors((errors) => ({ ...errors, companySlug: "" }));
+                            setForm((prev) => ({ ...prev, companySlug: event.target.value }));
+                          }}
                           required
                         >
                           <option value="">Choose company</option>
@@ -601,6 +618,7 @@ export default function AdminDashboardPage() {
                             </option>
                           ))}
                         </select>
+                        {projectErrors.companySlug && <span role="alert" className="mt-1 block text-xs text-rose-600">{projectErrors.companySlug}</span>}
                       </label>
                     )}
                   </div>
@@ -610,24 +628,45 @@ export default function AdminDashboardPage() {
                       className={fieldClass}
                       placeholder="e.g. Proprietary SaaS Solution"
                       value={form.projectType}
-                      onChange={(event) => setForm((prev) => ({ ...prev, projectType: event.target.value }))}
+                      aria-invalid={Boolean(projectErrors.projectType)}
+                      onChange={(event) => {
+                        setProjectErrors((errors) => ({ ...errors, projectType: "" }));
+                        setForm((prev) => ({ ...prev, projectType: event.target.value }));
+                      }}
                     />
+                    {projectErrors.projectType && <span role="alert" className="mt-1 block text-xs text-rose-600">{projectErrors.projectType}</span>}
                   </label>
                   <label className={labelClass}>
                     Project title
-                    <input className={fieldClass} placeholder="e.g. Wayfinder" value={form.title} onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))} required />
+                    <input className={fieldClass} placeholder="e.g. Wayfinder" value={form.title} aria-invalid={Boolean(projectErrors.title)} onChange={(event) => {
+                      setProjectErrors((errors) => ({ ...errors, title: "" }));
+                      setForm((prev) => ({ ...prev, title: event.target.value }));
+                    }} required />
+                    {projectErrors.title && <span role="alert" className="mt-1 block text-xs text-rose-600">{projectErrors.title}</span>}
                   </label>
                   <label className={labelClass}>
                     Description
-                    <textarea className={`min-h-24 ${fieldClass}`} placeholder="What this project does" value={form.description} onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))} required />
+                    <textarea className={`min-h-24 ${fieldClass}`} placeholder="What this project does" value={form.description} aria-invalid={Boolean(projectErrors.description)} onChange={(event) => {
+                      setProjectErrors((errors) => ({ ...errors, description: "" }));
+                      setForm((prev) => ({ ...prev, description: event.target.value }));
+                    }} required />
+                    {projectErrors.description && <span role="alert" className="mt-1 block text-xs text-rose-600">{projectErrors.description}</span>}
                   </label>
                   <label className={labelClass}>
                     Full details
-                    <textarea className={`min-h-36 ${fieldClass}`} placeholder="In-depth story, process, results. Shown on the project details page." value={form.details} onChange={(event) => setForm((prev) => ({ ...prev, details: event.target.value }))} />
+                    <textarea className={`min-h-36 ${fieldClass}`} placeholder="In-depth story, process, results. Shown on the project details page." value={form.details} aria-invalid={Boolean(projectErrors.details)} onChange={(event) => {
+                      setProjectErrors((errors) => ({ ...errors, details: "" }));
+                      setForm((prev) => ({ ...prev, details: event.target.value }));
+                    }} />
+                    {projectErrors.details && <span role="alert" className="mt-1 block text-xs text-rose-600">{projectErrors.details}</span>}
                   </label>
                   <label className={labelClass}>
                     Your role
-                    <input className={fieldClass} placeholder="e.g. Product Strategy" value={form.role} onChange={(event) => setForm((prev) => ({ ...prev, role: event.target.value }))} />
+                    <input className={fieldClass} placeholder="e.g. Product Strategy" value={form.role} aria-invalid={Boolean(projectErrors.role)} onChange={(event) => {
+                      setProjectErrors((errors) => ({ ...errors, role: "" }));
+                      setForm((prev) => ({ ...prev, role: event.target.value }));
+                    }} />
+                    {projectErrors.role && <span role="alert" className="mt-1 block text-xs text-rose-600">{projectErrors.role}</span>}
                   </label>
                   <label className={labelClass}>
                     Image or video URL
@@ -635,20 +674,23 @@ export default function AdminDashboardPage() {
                       className={fieldClass}
                       placeholder="Paste a direct URL or Google Drive share link"
                       value={form.image}
-                      onChange={(event) =>
+                      aria-invalid={Boolean(projectErrors.image)}
+                      onChange={(event) => {
+                        setProjectErrors((errors) => ({ ...errors, image: "" }));
                         setForm((prev) => ({
                           ...prev,
                           image: event.target.value,
                           ...( /\.(mp4|webm|ogg|mov)(?:$|[?#])/i.test(event.target.value)
                             ? { isVideo: true }
                             : {} ),
-                        }))
-                      }
+                        }));
+                      }}
                       required
                     />
                     <span className="mt-1 block text-xs font-normal text-slate-500">
                       Drive link: set access to “Anyone with the link”. For Drive videos, enable Video media below.
                     </span>
+                    {projectErrors.image && <span role="alert" className="mt-1 block text-xs text-rose-600">{projectErrors.image}</span>}
                   </label>
                   <label className={labelClass}>
                     Upload media
@@ -667,11 +709,19 @@ export default function AdminDashboardPage() {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <label className={labelClass}>
                       GitHub URL
-                      <input className={fieldClass} placeholder="https://github.com/..." value={form.github} onChange={(event) => setForm((prev) => ({ ...prev, github: event.target.value }))} />
+                      <input className={fieldClass} placeholder="https://github.com/..." value={form.github} aria-invalid={Boolean(projectErrors.github)} onChange={(event) => {
+                        setProjectErrors((errors) => ({ ...errors, github: "" }));
+                        setForm((prev) => ({ ...prev, github: event.target.value }));
+                      }} />
+                      {projectErrors.github && <span role="alert" className="mt-1 block text-xs text-rose-600">{projectErrors.github}</span>}
                     </label>
                     <label className={labelClass}>
                       Live demo URL
-                      <input className={fieldClass} placeholder="https://..." value={form.demo} onChange={(event) => setForm((prev) => ({ ...prev, demo: event.target.value }))} />
+                      <input className={fieldClass} placeholder="https://..." value={form.demo} aria-invalid={Boolean(projectErrors.demo)} onChange={(event) => {
+                        setProjectErrors((errors) => ({ ...errors, demo: "" }));
+                        setForm((prev) => ({ ...prev, demo: event.target.value }));
+                      }} />
+                      {projectErrors.demo && <span role="alert" className="mt-1 block text-xs text-rose-600">{projectErrors.demo}</span>}
                     </label>
                   </div>
                   <div>
@@ -688,18 +738,31 @@ export default function AdminDashboardPage() {
                           className={`${fieldClass} pl-11`}
                           placeholder="https://www.linkedin.com/..."
                           value={form.linkedin}
-                          onChange={(event) => setForm((prev) => ({ ...prev, linkedin: event.target.value }))}
+                          aria-invalid={Boolean(projectErrors.socialLinks)}
+                          onChange={(event) => {
+                            setProjectErrors((errors) => ({ ...errors, socialLinks: "" }));
+                            setForm((prev) => ({ ...prev, linkedin: event.target.value }));
+                          }}
                         />
                       </span>
+                      {projectErrors.socialLinks && <span role="alert" className="mt-1 block text-xs text-rose-600">{projectErrors.socialLinks}</span>}
                     </label>
                   </div>
                   <label className={labelClass}>
                     Technologies
-                    <input className={fieldClass} placeholder="React, Node.js, MongoDB" value={form.technologies} onChange={(event) => setForm((prev) => ({ ...prev, technologies: event.target.value }))} />
+                    <input className={fieldClass} placeholder="React, Node.js, MongoDB" value={form.technologies} aria-invalid={Boolean(projectErrors.technologies)} onChange={(event) => {
+                      setProjectErrors((errors) => ({ ...errors, technologies: "" }));
+                      setForm((prev) => ({ ...prev, technologies: event.target.value }));
+                    }} />
+                    {projectErrors.technologies && <span role="alert" className="mt-1 block text-xs text-rose-600">{projectErrors.technologies}</span>}
                   </label>
                   <label className={labelClass}>
                     Highlights
-                    <input className={fieldClass} placeholder="Fast load, Role-based access" value={form.highlights} onChange={(event) => setForm((prev) => ({ ...prev, highlights: event.target.value }))} />
+                    <input className={fieldClass} placeholder="Fast load, Role-based access" value={form.highlights} aria-invalid={Boolean(projectErrors.highlights)} onChange={(event) => {
+                      setProjectErrors((errors) => ({ ...errors, highlights: "" }));
+                      setForm((prev) => ({ ...prev, highlights: event.target.value }));
+                    }} />
+                    {projectErrors.highlights && <span role="alert" className="mt-1 block text-xs text-rose-600">{projectErrors.highlights}</span>}
                   </label>
                   <div className="grid gap-4 sm:grid-cols-3">
                     <label className={labelClass}>
@@ -707,17 +770,26 @@ export default function AdminDashboardPage() {
                       <select
                         className={fieldClass}
                         value={form.category}
-                        onChange={(event) => setForm((prev) => ({ ...prev, category: event.target.value as FormState["category"] }))}
+                        aria-invalid={Boolean(projectErrors.category)}
+                        onChange={(event) => {
+                          setProjectErrors((errors) => ({ ...errors, category: "" }));
+                          setForm((prev) => ({ ...prev, category: event.target.value as FormState["category"] }));
+                        }}
                       >
                         <option>Full Stack</option>
                         <option>Frontend</option>
                         <option>Backend</option>
                         <option>Web Development</option>
                       </select>
+                      {projectErrors.category && <span role="alert" className="mt-1 block text-xs text-rose-600">{projectErrors.category}</span>}
                     </label>
                     <label className={labelClass}>
                       Display order
-                      <input type="number" className={fieldClass} placeholder="0" value={form.order} onChange={(event) => setForm((prev) => ({ ...prev, order: Number(event.target.value) }))} />
+                      <input type="number" min="0" step="1" className={fieldClass} placeholder="0" value={form.order} aria-invalid={Boolean(projectErrors.order)} onChange={(event) => {
+                        setProjectErrors((errors) => ({ ...errors, order: "" }));
+                        setForm((prev) => ({ ...prev, order: event.target.value === "" ? "" : event.target.valueAsNumber }));
+                      }} />
+                      {projectErrors.order && <span role="alert" className="mt-1 block text-xs text-rose-600">{projectErrors.order}</span>}
                     </label>
                     <label className={`${labelClass} flex items-end gap-2 pb-3`}>
                       <input type="checkbox" checked={form.isVideo} onChange={(event) => setForm((prev) => ({ ...prev, isVideo: event.target.checked }))} />
@@ -738,7 +810,10 @@ export default function AdminDashboardPage() {
                     {form.id ? "Update project" : "Add project"}
                   </button>
                   {form.id && (
-                    <button type="button" className="rounded-xl border border-slate-200 px-5 py-3" onClick={() => setForm(emptyForm)}>
+                    <button type="button" className="rounded-xl border border-slate-200 px-5 py-3" onClick={() => {
+                      setProjectErrors({});
+                      setForm(emptyForm);
+                    }}>
                       Cancel
                     </button>
                   )}

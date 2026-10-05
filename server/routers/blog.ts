@@ -4,16 +4,8 @@ import { adminProcedure, createTRPCRouter, publicProcedure } from "@/server/trpc
 import { connectDB } from "@/server/db";
 import { BlogModel } from "@/server/models/Blog";
 import { serializeBlog } from "@/lib/content";
-
-const blogInput = z.object({
-  title: z.string().min(2),
-  excerpt: z.string().min(8),
-  content: z.string().min(20),
-  image: z.string().optional().default(""),
-  tags: z.array(z.string()).optional().default([]),
-  published: z.boolean().optional().default(true),
-  order: z.number().optional().default(0),
-});
+import { objectIdSchema } from "@/lib/validation/common";
+import { blogCreateSchema, blogUpdateSchema } from "@/lib/validation/blog";
 
 export const blogRouter = createTRPCRouter({
   getAll: publicProcedure.query(async () => {
@@ -21,7 +13,7 @@ export const blogRouter = createTRPCRouter({
     const blogs = await BlogModel.find({ published: { $ne: false } }).sort({ order: 1, createdAt: -1 }).lean();
     return blogs.map(serializeBlog);
   }),
-  getById: publicProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {
+  getById: publicProcedure.input(z.object({ id: objectIdSchema })).query(async ({ input }) => {
     await connectDB();
     const blog = await BlogModel.findOne({ _id: input.id, published: { $ne: false } }).lean();
     if (!blog) {
@@ -34,12 +26,12 @@ export const blogRouter = createTRPCRouter({
     const blogs = await BlogModel.find().sort({ order: 1, createdAt: -1 }).lean();
     return blogs.map(serializeBlog);
   }),
-  create: adminProcedure.input(blogInput).mutation(async ({ input }) => {
+  create: adminProcedure.input(blogCreateSchema).mutation(async ({ input }) => {
     await connectDB();
     const created = await BlogModel.create(input);
     return serializeBlog(created.toObject());
   }),
-  update: adminProcedure.input(blogInput.extend({ id: z.string().min(1) })).mutation(async ({ input }) => {
+  update: adminProcedure.input(blogUpdateSchema).mutation(async ({ input }) => {
     await connectDB();
     const { id, ...data } = input;
     const updated = await BlogModel.findByIdAndUpdate(id, data, { new: true, runValidators: true });
@@ -48,7 +40,7 @@ export const blogRouter = createTRPCRouter({
     }
     return serializeBlog(updated.toObject());
   }),
-  delete: adminProcedure.input(z.object({ id: z.string().min(1) })).mutation(async ({ input }) => {
+  delete: adminProcedure.input(z.object({ id: objectIdSchema })).mutation(async ({ input }) => {
     await connectDB();
     const deleted = await BlogModel.findByIdAndDelete(input.id);
     if (!deleted) {

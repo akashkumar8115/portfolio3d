@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/lib/trpc";
 import { getGoogleDriveImageSource } from "@/lib/projectMedia";
+import { blogCreateSchema } from "@/lib/validation/blog";
 
 const emptyBlog = {
   title: "",
@@ -16,7 +17,7 @@ const emptyBlog = {
 };
 type BlogFilter = "all" | "published" | "drafts";
 
-type BlogForm = typeof emptyBlog & { id?: string };
+type BlogForm = Omit<typeof emptyBlog, "order"> & { order: number | ""; id?: string };
 
 const fieldClass =
   "mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none focus:border-sky-400";
@@ -26,6 +27,7 @@ export default function BlogPanel() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [form, setForm] = useState<BlogForm>(emptyBlog);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState("");
   const [statusIsError, setStatusIsError] = useState(false);
   const [search, setSearch] = useState("");
@@ -72,7 +74,7 @@ export default function BlogPanel() {
         .map((item) => item.trim())
         .filter(Boolean),
       published: form.published,
-      order: Number(form.order) || 0,
+      order: form.order,
     }),
     [form],
   );
@@ -83,6 +85,7 @@ export default function BlogPanel() {
         setStatus("Blog saved.");
         setStatusIsError(false);
         setForm(emptyBlog);
+        setFieldErrors({});
         await refreshBlogs();
       },
       onError: (error) => {
@@ -98,6 +101,7 @@ export default function BlogPanel() {
         setStatus("Blog updated.");
         setStatusIsError(false);
         setForm(emptyBlog);
+        setFieldErrors({});
         await refreshBlogs();
       },
       onError: (error) => {
@@ -145,11 +149,23 @@ export default function BlogPanel() {
     event.preventDefault();
     setStatus("");
     setStatusIsError(false);
-    if (form.id) {
-      updateBlog.mutate({ id: form.id, ...payload });
+    const parsed = blogCreateSchema.safeParse(payload);
+    if (!parsed.success) {
+      setFieldErrors(
+        Object.fromEntries(
+          Object.entries(parsed.error.flatten().fieldErrors).map(([field, messages]) => [field, messages?.[0] ?? "Please check this field."]),
+        ),
+      );
+      setStatus("Please review the highlighted blog fields.");
+      setStatusIsError(true);
       return;
     }
-    createBlog.mutate(payload);
+    setFieldErrors({});
+    if (form.id) {
+      updateBlog.mutate({ id: form.id, ...parsed.data });
+      return;
+    }
+    createBlog.mutate(parsed.data);
   };
 
   return (
@@ -164,21 +180,33 @@ export default function BlogPanel() {
           {status}
         </p>
       )}
-      <form onSubmit={onSubmit} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <form onSubmit={onSubmit} noValidate className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <h2 className="text-xl font-semibold">{form.id ? "Edit blog" : "Add blog"}</h2>
         <p className="mt-1 text-sm text-slate-500">Published blogs appear in the home slider and /blogs.</p>
         <div className="mt-5 grid gap-4">
           <label className={labelClass}>
             Title
-            <input className={fieldClass} value={form.title} onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))} required />
+            <input className={fieldClass} value={form.title} aria-invalid={Boolean(fieldErrors.title)} onChange={(event) => {
+              setFieldErrors((errors) => ({ ...errors, title: "" }));
+              setForm((prev) => ({ ...prev, title: event.target.value }));
+            }} required />
+            {fieldErrors.title && <span role="alert" className="mt-1 block text-xs text-rose-600">{fieldErrors.title}</span>}
           </label>
           <label className={labelClass}>
             Short excerpt
-            <textarea className={`min-h-20 ${fieldClass}`} value={form.excerpt} onChange={(event) => setForm((prev) => ({ ...prev, excerpt: event.target.value }))} required />
+            <textarea className={`min-h-20 ${fieldClass}`} value={form.excerpt} aria-invalid={Boolean(fieldErrors.excerpt)} onChange={(event) => {
+              setFieldErrors((errors) => ({ ...errors, excerpt: "" }));
+              setForm((prev) => ({ ...prev, excerpt: event.target.value }));
+            }} required />
+            {fieldErrors.excerpt && <span role="alert" className="mt-1 block text-xs text-rose-600">{fieldErrors.excerpt}</span>}
           </label>
           <label className={labelClass}>
             Full article
-            <textarea className={`min-h-40 ${fieldClass}`} value={form.content} onChange={(event) => setForm((prev) => ({ ...prev, content: event.target.value }))} required />
+            <textarea className={`min-h-40 ${fieldClass}`} value={form.content} aria-invalid={Boolean(fieldErrors.content)} onChange={(event) => {
+              setFieldErrors((errors) => ({ ...errors, content: "" }));
+              setForm((prev) => ({ ...prev, content: event.target.value }));
+            }} required />
+            {fieldErrors.content && <span role="alert" className="mt-1 block text-xs text-rose-600">{fieldErrors.content}</span>}
           </label>
           <label className={labelClass}>
             Cover image URL
@@ -186,8 +214,13 @@ export default function BlogPanel() {
               className={fieldClass}
               placeholder="Paste an image URL or Google Drive share link"
               value={form.image}
-              onChange={(event) => setForm((prev) => ({ ...prev, image: event.target.value }))}
+              aria-invalid={Boolean(fieldErrors.image)}
+              onChange={(event) => {
+                setFieldErrors((errors) => ({ ...errors, image: "" }));
+                setForm((prev) => ({ ...prev, image: event.target.value }));
+              }}
             />
+            {fieldErrors.image && <span role="alert" className="mt-1 block text-xs text-rose-600">{fieldErrors.image}</span>}
             <span className="mt-1 block text-xs font-normal text-slate-500">
               For Drive, set access to “Anyone with the link”.
             </span>
@@ -222,11 +255,19 @@ export default function BlogPanel() {
           </label>
           <label className={labelClass}>
             Tags
-            <input className={fieldClass} placeholder="SaaS, Architecture" value={form.tags} onChange={(event) => setForm((prev) => ({ ...prev, tags: event.target.value }))} />
+            <input className={fieldClass} placeholder="SaaS, Architecture" value={form.tags} aria-invalid={Boolean(fieldErrors.tags)} onChange={(event) => {
+              setFieldErrors((errors) => ({ ...errors, tags: "" }));
+              setForm((prev) => ({ ...prev, tags: event.target.value }));
+            }} />
+            {fieldErrors.tags && <span role="alert" className="mt-1 block text-xs text-rose-600">{fieldErrors.tags}</span>}
           </label>
           <label className={labelClass}>
             Display order
-            <input type="number" className={fieldClass} value={form.order} onChange={(event) => setForm((prev) => ({ ...prev, order: Number(event.target.value) }))} />
+            <input type="number" min="0" step="1" className={fieldClass} value={form.order} aria-invalid={Boolean(fieldErrors.order)} onChange={(event) => {
+              setFieldErrors((errors) => ({ ...errors, order: "" }));
+              setForm((prev) => ({ ...prev, order: event.target.value === "" ? "" : event.target.valueAsNumber }));
+            }} />
+            {fieldErrors.order && <span role="alert" className="mt-1 block text-xs text-rose-600">{fieldErrors.order}</span>}
           </label>
           <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
             <input type="checkbox" checked={form.published} onChange={(event) => setForm((prev) => ({ ...prev, published: event.target.checked }))} />
@@ -242,7 +283,10 @@ export default function BlogPanel() {
             {form.id ? "Update blog" : "Add blog"}
           </button>
           {form.id && (
-            <button type="button" className="rounded-xl border border-slate-200 px-5 py-3" onClick={() => setForm(emptyBlog)}>
+            <button type="button" className="rounded-xl border border-slate-200 px-5 py-3" onClick={() => {
+              setFieldErrors({});
+              setForm(emptyBlog);
+            }}>
               Cancel
             </button>
           )}
@@ -288,16 +332,19 @@ export default function BlogPanel() {
                   type="button"
                   className="text-sm font-semibold text-sky-600"
                   onClick={() =>
-                    setForm({
-                      id: blog.id,
-                      title: blog.title,
-                      excerpt: blog.excerpt,
-                      content: blog.content,
-                      image: blog.image,
-                      tags: blog.tags.join(", "),
-                      published: blog.published,
-                      order: blog.order,
-                    })
+                    {
+                      setFieldErrors({});
+                      setForm({
+                        id: blog.id,
+                        title: blog.title,
+                        excerpt: blog.excerpt,
+                        content: blog.content,
+                        image: blog.image,
+                        tags: blog.tags.join(", "),
+                        published: blog.published,
+                        order: blog.order,
+                      });
+                    }
                   }
                 >
                   Edit

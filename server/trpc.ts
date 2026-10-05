@@ -14,11 +14,18 @@ export async function createTRPCContext(opts: { req: Request }): Promise<TRPCCon
 
 const t = initTRPC.context<TRPCContext>().create({
   errorFormatter({ shape, error }) {
+    const validationError = error.cause instanceof ZodError ? error.cause : null;
+    const firstIssue = validationError?.issues[0]?.message;
+    const validationMessage =
+      firstIssue && !firstIssue.startsWith("Invalid input:") && !firstIssue.startsWith("Invalid option:")
+        ? firstIssue
+        : "Please check the submitted fields and try again.";
     return {
       ...shape,
+      ...(validationError ? { message: validationMessage } : {}),
       data: {
         ...shape.data,
-        zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
+        zodError: validationError?.flatten() ?? null,
       },
     };
   },
